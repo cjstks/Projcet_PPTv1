@@ -20,6 +20,30 @@ body::before {
     z-index: -1;
 }
 
+#header {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    padding: 10px;
+    color: white;
+    background: rgba(0,0,0,0); /* 반투명 배경 */
+    z-index: 1000; /* 슬라이드 위로 표시 */
+}
+#footer {
+    position: fixed;
+    bottom: 0;
+    right: 0;            /* 오른쪽 붙이기 */
+    padding: 10px 20px;  /* 상하 10px, 좌우 20px */
+    color: white;
+    background: rgba(0,0,0,0); /* 투명 배경 */
+    z-index: 1000;
+    width: auto;         /* 내용 크기만큼 */
+}
+
+#header { top: 0; }
+#footer { bottom: 0; }
+
+
 /* 슬라이드 관련 */
 .slide {
     display: none;
@@ -42,6 +66,11 @@ h1, h2 {
     color: #4FC3F7;
     text-shadow: 2px 2px 5px black;
     font-size: -webkit-xxx-large;
+}
+h1-1 {
+    color: #4FC3F7;
+    text-shadow: 2px 2px 5px black;
+    font-size: 26px;
 }
 h3 {
     color: white;
