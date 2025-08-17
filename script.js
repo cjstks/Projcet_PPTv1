@@ -54,8 +54,8 @@ function updateStepIndicator(type, current, total) {
 
 // 키보드 이벤트 리스너
 document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') nextStepOrSlide();
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') prevStep();
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'PageDown') nextStepOrSlide();
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'PageUp') prevStep();
 });
 
 // 다음 단계 또는 슬라이드
