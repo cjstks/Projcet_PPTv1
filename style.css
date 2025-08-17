@@ -1,0 +1,229 @@
+/* 기본 스타일 */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    overflow: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('background_img.jpg') no-repeat center center/cover;
+    filter: brightness(0.4) blur(2px);
+    z-index: -1;
+}
+
+/* 슬라이드 관련 */
+.slide {
+    display: none;
+    height: 100vh;
+    box-sizing: border-box;
+    animation: fadeIn 1s ease;
+}
+
+.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 40px;
+}
+
+/* 텍스트 스타일 */
+h1, h2 {
+    color: #4FC3F7;
+    text-shadow: 2px 2px 5px black;
+}
+
+ul {
+    font-size: 1.2em;
+    line-height: 1.6em;
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    margin: 10px 0;
+}
+
+/* 키프레임 애니메이션 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes blinkFast {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes shutdown {
+    from { opacity: 1; }
+    to { opacity: 0; transform: scale(0.5); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes compareGlow {
+    0% { box-shadow: 0 0 15px #4FC3F7; }
+    50% { box-shadow: 0 0 30px #FFD700, 0 0 45px #FFD700; }
+    100% { box-shadow: 0 0 15px #4FC3F7; }
+}
+
+/* 다이어그램 및 노드 */
+.loop-diagram {
+    margin-top: 40px;
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+.node {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #4FC3F7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    position: absolute;
+    box-shadow: 0 0 15px #4FC3F7;
+    transition: all 0.8s ease;
+}
+
+.node.looping {
+    animation: blinkFast 0.5s infinite;
+}
+
+.node.off {
+    animation: shutdown 2s forwards;
+}
+
+.node.highlight {
+    animation: pulse 1s ease-in-out;
+}
+
+.node.comparing {
+    animation: compareGlow 2s ease-in-out infinite;
+}
+
+/* Bridge ID */
+.bridge-id {
+    position: absolute;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.bridge-id.show {
+    opacity: 1;
+}
+
+.bridge-id.winner {
+    background: #FFD700;
+    color: #000;
+}
+
+/* 링크 및 BPDU */
+.link {
+    position: absolute;
+    background: #fff;
+    height: 4px;
+    transform-origin: left center;
+    transition: all 0.8s ease;
+}
+
+.bpdu {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    opacity: 0.9;
+    pointer-events: none;
+    box-shadow: 0 0 8px #fff;
+    z-index: 5;
+}
+
+/* 단계 표시기 */
+.step-indicator {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* 테이블 */
+table {
+    border-collapse: collapse;
+    margin: 20px auto;
+}
+
+th, td {
+    border: 1px solid #fff;
+    padding: 12px;
+}
+
+th {
+    background: #4FC3F7;
+}
+
+td {
+    background: #333;
+}
+
+/* 포트 라벨 */
+.port-label {
+    position: absolute;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 3px 6px;
+    border-radius: 6px;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.5s ease;
+}
+
+.port-label.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.root-port {
+    background-color: #007bff; /* 파란색 */
+}
+
+.designated-port {
+    background-color: #28a745; /* 초록색 */
+}
+
+.alternate-port {
+    background-color: #dc3545; /* 빨간색 */
+}

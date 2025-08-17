@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>STP 발표</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 1. 제목 -->
+<section class="slide active">
+    <h1>Spanning Tree Protocol (STP)</h1>
+    <p>루프 없는 안정적인 네트워크를 위한 핵심 프로토콜</p>
+</section>
+
+<!-- 2. 필요성 -->
+<section class="slide">
+    <h2>왜 STP가 필요한가?</h2>
+    <p>루프가 발생하면 브로드캐스트 스톰이 일어나며 네트워크가 마비됩니다.</p>
+    <div class="loop-diagram" id="stormDiagram">
+        <svg width="100%" height="100%">
+            <line x1="200" y1="60" x2="400" y2="200" stroke="white" stroke-width="4"/>
+            <line x1="400" y1="200" x2="200" y2="340" stroke="white" stroke-width="4"/>
+            <line x1="200" y1="340" x2="0" y2="200" stroke="white" stroke-width="4"/>
+            <line x1="0" y1="200" x2="200" y2="60" stroke="white" stroke-width="4"/>
+        </svg>
+        <div class="node" id="sw1" style="top:20px; left:160px;">SW1</div>
+        <div class="node" id="sw2" style="top:160px; left:360px;">SW2</div>
+        <div class="node" id="sw3" style="top:300px; left:160px;">SW3</div>
+        <div class="node" id="sw4" style="top:160px; left:-40px;">SW4</div>
+    </div>
+</section>
+
+<!-- 3. STP 기본 개념 -->
+<section class="slide">
+    <h2>STP 기본 동작 원리 및 선출 과정</h2>
+    <ul>
+        <li><b>Root Bridge</b>: 네트워크의 기준이 되는 스위치</li>
+        <li><b>루트 포트</b>: Root Bridge로 가는 최단의 경로 포트</li>
+        <li><b>지정 포트</b>: BPDU를 보내 주는 포트</li>
+        <li><b>대체(차단) 포트</b>: 루프를 방지 하기 위해 차단이 된 포트</li>
+    </ul>
+    <div class="loop-diagram" id="stpDiagram">
+        <svg width="100%" height="100%">
+            <line id="link-r-s2" x1="200" y1="60" x2="400" y2="240" stroke="white" stroke-width="4"/>
+            <line id="link-r-s3" x1="200" y1="60" x2="0" y2="240" stroke="white" stroke-width="4"/>
+            <line id="link-s2-s3" x1="400" y1="240" x2="0" y2="240" stroke="white" stroke-width="4"/>
+        </svg>
+        <div class="node" id="stp-root" style="top:20px; left:160px;">
+            Root
+            <div class="bridge-id" id="root-id">ID: 4096.001</div>
+        </div>
+        <div class="node" id="stp-sw2" style="top:200px; left:360px;">
+            SW2
+            <div class="bridge-id" id="sw2-id">ID: 8192.002</div>
+        </div>
+        <div class="node" id="stp-sw3" style="top:200px; left:-40px;">
+            SW3
+            <div class="bridge-id" id="sw3-id">ID: 12288.003</div>
+        </div>
+
+        <!-- 루트 포트 -->
+        <div class="port-label root-port" id="rp1" style="top: 190px; left: 30px;">Root Port</div>
+        <div class="port-label root-port" id="rp2" style="top: 190px; left: 300px;">Root Port</div>
+
+        <!-- 지정 포트 -->
+        <div class="port-label designated-port" id="dp1" style="top: 90px; left: 80px;">Designated Port</div>
+        <div class="port-label designated-port" id="dp2" style="top: 225px; left: 270px;">Designated Port</div>
+        <div class="port-label designated-port" id="dp3" style="top: 90px; left: 210px;">Designated Port</div>
+
+        <!-- 대체 포트 -->
+        <div class="port-label alternate-port" id="ap1" style="top: 225px; left: 40px;">Alternate Port</div>
+    </div>
+    <div class="step-indicator" id="stpStepIndicator">단계: 0/6</div>
+</section>
+
+<!-- PVST+ -->
+<section class="slide">
+    <h2>PVST+ (Per VLAN STP)</h2>
+    <p>VLAN마다 독립적으로 BPDU 전송</p>
+    <div class="loop-diagram" id="pvstDiagram" style="width: 400px; height: 300px; position: relative;">
+        <svg width="100%" height="100%" style="position:absolute; top:0; left:0; z-index:0;">
+            <line x1="40" y1="40" x2="360" y2="40" stroke="white" stroke-width="4"/>
+            <line x1="40" y1="40" x2="40" y2="260" stroke="white" stroke-width="4"/>
+            <line x1="40" y1="260" x2="360" y2="260" stroke="white" stroke-width="4"/>
+            <line x1="360" y1="40" x2="360" y2="260" stroke="white" stroke-width="4"/>
+        </svg>
+        <div class="node" id="vlan10" style="top:20px; left:20px; background:#FFD700; z-index:1;">VLAN10</div>
+        <div class="node" id="vlan20" style="top:20px; right:20px; background:#FF4500; z-index:1;">VLAN20</div>
+        <div class="node" id="vlan30" style="bottom:20px; left:20px; background:#32CD32; z-index:1;">VLAN30</div>
+        <div class="node" id="vlan40" style="bottom:20px; right:20px; background:#1E90FF; z-index:1;">VLAN40</div>
+    </div>
+    <div class="step-indicator" id="pvstStepIndicator">단계: 0/5</div>
+</section>
+
+<!-- RSTP -->
+<section class="slide">
+    <h2>RSTP (Rapid STP)</h2>
+    <p>빠른 수렴 (수 초 내 복구)</p>
+    <div class="loop-diagram" id="rstpDiagram" style="width:400px; height:300px; position:relative;">
+        <svg width="100%" height="100%" style="position:absolute; top:0; left:0; z-index:0;">
+            <line x1="200" y1="40" x2="390" y2="180" stroke="white" stroke-width="4"/>
+            <line x1="240" y1="40" x2="14" y2="200" stroke="white" stroke-width="4"/>
+            <line x1="60" y1="200" x2="300" y2="390" stroke="white" stroke-width="4"/>
+            <line x1="400" y1="180" x2="0" y2="480" stroke="white" stroke-width="4"/>
+        </svg>
+        <div class="node" id="rstp-root" style="top:20px; left:180px;">Root</div>
+        <div class="node" id="rstp-sw1" style="top:130px; left:360px;">SW1</div>
+        <div class="node" id="rstp-sw2" style="top:130px; left:0px;">SW2</div>
+        <div class="node" id="rstp-sw3" style="top:270px; left:180px;">SW3</div>
+    </div>
+    <div class="step-indicator" id="rstpStepIndicator">단계: 0/4</div>
+</section>
+
+<!-- MSTP -->
+<section class="slide">
+    <h2>MSTP (Multiple STP)</h2>
+    <p>여러 VLAN을 하나의 인스턴스로 묶어 효율적 관리</p>
+    <div class="loop-diagram">
+        <svg width="100%" height="100%">
+            <line x1="200" y1="40" x2="360" y2="150" stroke="white" stroke-width="4"/>
+            <line x1="360" y1="150" x2="200" y2="260" stroke="white" stroke-width="4"/>
+            <line x1="200" y1="260" x2="40" y2="150" stroke="white" stroke-width="4"/>
+        </svg>
+        <div class="node" id="mstp-msti1" style="top:0; left:160px;">MSTI 1</div>
+        <div class="node" id="mstp-msti2" style="top:150px; right:0;">MSTI 2</div>
+        <div class="node" id="mstp-msti3" style="bottom:0; left:150px;">MSTI 3</div>
+    </div>
+</section>
+
+<!-- 비교 -->
+<section class="slide">
+    <h2>STP 프로토콜 비교</h2>
+    <table>
+        <tr><th>프로토콜</th><th>특징</th><th>장점</th></tr>
+        <tr><td>STP</td><td>루프 방지, 느린 수렴</td><td>안정적</td></tr>
+        <tr><td>PVST+</td><td>VLAN별 STP</td><td>트래픽 분산</td></tr>
+        <tr><td>RSTP</td><td>빠른 수렴</td><td>수 초 내 복구</td></tr>
+        <tr><td>MSTP</td><td>여러 VLAN 인스턴스 묶음</td><td>대규모 네트워크 효율화</td></tr>
+    </table>
+</section>
+
+<!-- 결론 -->
+<section class="slide">
+    <h2>결론</h2>
+    <p>STP는 안정적인 네트워크의 필수 요소입니다.<br>PVST+, RSTP, MSTP는 상황에 따라 선택적으로 활용!</p>
+    <h3>질문 있으신가요? 😊</h3>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
