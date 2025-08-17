@@ -20,7 +20,7 @@ function showSlide(index) {
     if (slides[index].querySelector('#stpDiagram')) {
         stpStep = 0;
         resetSTPAnimation();
-        updateStepIndicator('stp', stpStep, 6);
+        updateStepIndicator('stp', stpStep, 9);
     }
     if (slides[index].querySelector('#pvstDiagram')) {
         pvstStep = 0;
@@ -78,10 +78,10 @@ function nextStepOrSlide() {
     }
 
     if (slide.querySelector('#stpDiagram')) {
-        if (stpStep < 6) {
+        if (stpStep < 9) {
             stpStep++;
             runSTPStep(stpStep);
-            updateStepIndicator('stp', stpStep, 6);
+            updateStepIndicator('stp', stpStep, 9);
         } else if (current < slides.length - 1) {
             current++;
             showSlide(current);
@@ -146,7 +146,7 @@ function prevStep() {
             for (let i = 1; i <= stpStep; i++) {
                 setTimeout(() => runSTPStep(i), i * 300);
             }
-            updateStepIndicator('stp', stpStep, 6);
+            updateStepIndicator('stp', stpStep, 9);
         } else {
             // 단계가 0일 때는 이전 슬라이드로
             prevSlide();
@@ -318,76 +318,56 @@ function runSTPStep(step) {
 
     switch (step) {
         case 1:
-            // Bridge ID 표시 및 비교 시작
+            // Bridge ID 표시
             showBridgeIDs();
-            startBridgeComparison();
+            showComparisonText("Bridge ID 비교 시작");
             break;
 
         case 2:
-            // Root Bridge 선정 결과
-            selectRootBridge();
+            // Root Bridge 선출을 위한 Bridge ID 비교
+            startBridgeIDComparison();
             break;
 
         case 3:
-            // BPDU 전송 시뮬레이션 + 루트 포트 표시
-            createBPDU('stpDiagram', root, sw2, '#FFD700');
-            createBPDU('stpDiagram', root, sw3, '#FFD700');
-
-            // 루트 포트 라벨 표시
-            const rootPorts = ['rp1', 'rp2'];
-            rootPorts.forEach((id, index) => {
-                setTimeout(() => {
-                    const label = document.getElementById(id);
-                    if (label) label.classList.add('show');
-                }, 300 * (index + 1));
-            });
+            // Root Bridge 선정 결과
+            selectRootBridge();
+            showComparisonText("Root Bridge 선정: 4096.001 (가장 작은 Bridge ID)");
             break;
 
         case 4:
-            // 경로 비용 계산 + 지정 포트 표시
-            if (sw2) {
-                sw2.style.background = '#32CD32';
-                sw2.classList.add('highlight');
-            }
-            if (sw3) {
-                sw3.style.background = '#32CD32';
-                sw3.classList.add('highlight');
-            }
-            if (linkRS2) linkRS2.setAttribute('stroke', '#32CD32');
-            if (linkRS3) linkRS3.setAttribute('stroke', '#32CD32');
-
-            // 지정 포트 라벨 표시
-            const designatedPorts = ['dp1', 'dp3'];
-            designatedPorts.forEach((id, index) => {
-                setTimeout(() => {
-                    const label = document.getElementById(id);
-                    if (label) label.classList.add('show');
-                }, 200 * (index + 1));
-            });
+            // 루트 포트 선출 - Path Cost 비교
+            showComparisonText("루트 포트 선출: Path Cost 비교");
+            startPathCostComparison();
             break;
 
         case 5:
-            // 블로킹 포트 결정 + 대체 포트 표시
-            if (linkS2S3) {
-                linkS2S3.setAttribute('stroke', '#FF4500');
-                linkS2S3.setAttribute('stroke-dasharray', '10,5');
-            }
-
-            // 대체 포트 라벨 표시
-            const alternatePorts = ['dp2', 'ap1'];
-            alternatePorts.forEach((id, index) => {
-                setTimeout(() => {
-                    const label = document.getElementById(id);
-                    if (label) label.classList.add('show');
-                }, 300 * (index + 1));
-            });
+            // 루트 포트 선출 - Bridge ID 비교 (Path Cost가 같을 경우)
+            showComparisonText("Path Cost 동일 → Bridge ID 재비교");
+            startRootPortBridgeIDComparison();
             break;
 
         case 6:
-            // 루프 차단
-            if (linkS2S3) {
-                linkS2S3.style.opacity = '0';
-            }
+            // 루트 포트 선출 완료
+            selectRootPorts();
+            showComparisonText("루트 포트 선출 완료 (Port ID 비교 생략)");
+            break;
+
+        case 7:
+            // 지정 포트 선출 - Path Cost, Bridge ID, Port ID 비교
+            showComparisonText("지정 포트 선출: Path Cost → Bridge ID → Port ID 비교");
+            startDesignatedPortComparison();
+            break;
+
+        case 8:
+            // 대체 포트 선출 - SW2 vs SW3 비교
+            showComparisonText("대체 포트 선출: SW2 vs SW3 비교");
+            startAlternatePortComparison();
+            break;
+
+        case 9:
+            // 최종 결과 - 루프 차단
+            showComparisonText("STP 수렴 완료: 루프 차단");
+            finalizeSTConfig();
             break;
     }
 }
@@ -437,6 +417,248 @@ function selectRootBridge() {
     if (rootId) {
         rootId.classList.add('winner');
     }
+}
+
+// 비교 텍스트 표시 함수
+function showComparisonText(text) {
+    // 기존 텍스트 제거
+    const existingText = document.getElementById('comparison-text');
+    if (existingText) {
+        existingText.remove();
+    }
+
+    // 새 텍스트 생성
+    const textDiv = document.createElement('div');
+    textDiv.id = 'comparison-text';
+    textDiv.textContent = text;
+    textDiv.style.cssText = `
+        position: absolute;
+        top: 130px;
+        left: 57%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.8);
+        color: #FFD700;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 18px;
+        z-index: 100;
+        border: 2px solid #4FC3F7;
+    `;
+
+    const diagram = document.getElementById('stpDiagram');
+    if (diagram) {
+        diagram.appendChild(textDiv);
+    }
+}
+
+// Bridge ID 비교 애니메이션
+function startBridgeIDComparison() {
+    const root = document.getElementById('stp-root');
+    const sw2 = document.getElementById('stp-sw2');
+    const sw3 = document.getElementById('stp-sw3');
+
+    // 순차적으로 비교 표시
+    const comparisons = [
+        { nodes: [root, sw2], text: "Root(4096.001) vs SW2(8192.002)" },
+        { nodes: [root, sw3], text: "Root(4096.001) vs SW3(12288.003)" },
+        { nodes: [sw2, sw3], text: "SW2(8192.002) vs SW3(12288.003)" }
+    ];
+
+    let index = 0;
+    function showNextComparison() {
+        if (index < comparisons.length) {
+            const comp = comparisons[index];
+
+            // 모든 노드에서 비교 효과 제거
+            [root, sw2, sw3].forEach(node => {
+                if (node) node.classList.remove('comparing');
+            });
+
+            // 현재 비교 노드들에 효과 적용
+            comp.nodes.forEach(node => {
+                if (node) node.classList.add('comparing');
+            });
+
+            showComparisonText(comp.text);
+            index++;
+            setTimeout(showNextComparison, 2000);
+        }
+    }
+
+    showNextComparison();
+}
+
+// Path Cost 비교 애니메이션
+function startPathCostComparison() {
+    const sw2 = document.getElementById('stp-sw2');
+    const sw3 = document.getElementById('stp-sw3');
+    const linkRS2 = document.getElementById('link-r-s2');
+    const linkRS3 = document.getElementById('link-r-s3');
+
+    // Path Cost 비교 하이라이트
+    [sw2, sw3].forEach(node => {
+        if (node) {
+            node.style.background = '#FF6B6B';
+            node.classList.add('comparing');
+        }
+    });
+
+    // 링크 하이라이트
+    [linkRS2, linkRS3].forEach(link => {
+        if (link) link.setAttribute('stroke', '#FF6B6B');
+    });
+
+    // Path Cost 정보 표시
+    setTimeout(() => {
+        showComparisonText("SW2 Path Cost: 19, SW3 Path Cost: 19 → 동일!");
+    }, 2000);
+}
+
+// 루트 포트 선출을 위한 Bridge ID 재비교
+function startRootPortBridgeIDComparison() {
+    const sw2 = document.getElementById('stp-sw2');
+    const sw3 = document.getElementById('stp-sw3');
+
+    // Bridge ID 재비교 하이라이트
+    [sw2, sw3].forEach(node => {
+        if (node) {
+            node.style.background = '#9C27B0';
+            node.classList.add('comparing');
+        }
+    });
+
+    setTimeout(() => {
+        showComparisonText("Bridge ID: SW2(8192.002) < SW3(12288.003)");
+    }, 2000);
+}
+
+// 루트 포트 선출 완료
+function selectRootPorts() {
+    const sw2 = document.getElementById('stp-sw2');
+    const sw3 = document.getElementById('stp-sw3');
+    const linkRS2 = document.getElementById('link-r-s2');
+    const linkRS3 = document.getElementById('link-r-s3');
+
+    // 비교 효과 제거 및 루트 포트 색상 설정
+    [sw2, sw3].forEach(node => {
+        if (node) {
+            node.classList.remove('comparing');
+            node.style.background = '#007bff'; // 루트 포트 색상
+        }
+    });
+
+    [linkRS2, linkRS3].forEach(link => {
+        if (link) link.setAttribute('stroke', '#007bff');
+    });
+
+    // 루트 포트 라벨 표시
+    const rootPorts = ['rp1', 'rp2'];
+    rootPorts.forEach((id, index) => {
+        setTimeout(() => {
+            const label = document.getElementById(id);
+            if (label) label.classList.add('show');
+        }, 300 * (index + 1));
+    });
+
+    // BPDU 전송
+    const root = document.getElementById('stp-root');
+    createBPDU('stpDiagram', root, sw2, '#FFD700');
+    createBPDU('stpDiagram', root, sw3, '#FFD700');
+}
+
+// 지정 포트 비교
+function startDesignatedPortComparison() {
+    const root = document.getElementById('stp-root');
+    const sw2 = document.getElementById('stp-sw2');
+    const sw3 = document.getElementById('stp-sw3');
+
+    // Root에서 각 세그먼트의 지정 포트 선출
+    [root, sw2, sw3].forEach(node => {
+        if (node) {
+            node.style.background = '#28a745'; // 지정 포트 색상
+            node.classList.add('comparing');
+        }
+    });
+
+    setTimeout(() => {
+        showComparisonText("각 세그먼트별 최적 경로 → 지정 포트 선출");
+    }, 2000);
+
+    setTimeout(() => {
+        // 지정 포트 라벨 표시
+        const designatedPorts = ['dp1', 'dp3'];
+        designatedPorts.forEach((id, index) => {
+            setTimeout(() => {
+                const label = document.getElementById(id);
+                if (label) label.classList.add('show');
+            }, 200 * (index + 1));
+        });
+    }, 2000);
+}
+
+// 대체 포트 선출 비교
+function startAlternatePortComparison() {
+    const sw2 = document.getElementById('stp-sw2');
+    const sw3 = document.getElementById('stp-sw3');
+    const linkS2S3 = document.getElementById('link-s2-s3');
+
+    // SW2 vs SW3 비교
+    [sw2, sw3].forEach(node => {
+        if (node) {
+            node.style.background = '#dc3545'; // 대체 포트 색상
+            node.classList.add('comparing');
+        }
+    });
+
+    if (linkS2S3) {
+        linkS2S3.setAttribute('stroke', '#dc3545');
+        linkS2S3.setAttribute('stroke-width', '6');
+    }
+
+    setTimeout(() => {
+        showComparisonText("SW2가 지정 포트 → SW3가 대체 포트");
+    }, 2000);
+
+    setTimeout(() => {
+        // 대체 포트 라벨 표시
+        const alternatePort = ['ap1', 'dp2'];
+        alternatePort.forEach((id, index) => {
+                    setTimeout(() => {
+                        const label = document.getElementById(id);
+        if (label) label.classList.add('show');
+        }, 300 * (index + 1));
+        });
+
+        // 링크를 점선으로 변경 (차단 표시)
+        if (linkS2S3) {
+            linkS2S3.setAttribute('stroke-dasharray', '10,5');
+        }
+    }, 2000);
+}
+
+// 최종 STP 설정 완료
+function finalizeSTConfig() {
+    const sw2 = document.getElementById('stp-sw2');
+    const sw3 = document.getElementById('stp-sw3');
+    const linkS2S3 = document.getElementById('link-s2-s3');
+
+    // 모든 비교 효과 제거
+    [sw2, sw3].forEach(node => {
+        if (node) {
+            node.classList.remove('comparing');
+        }
+    });
+
+    // 링크 차단 (투명도 조절)
+    if (linkS2S3) {
+        linkS2S3.style.opacity = '0.3';
+        linkS2S3.setAttribute('stroke', '#FF4444');
+    }
+
+    setTimeout(() => {
+        showComparisonText("STP 수렴 완료! 루프 없는 안정적인 네트워크 구성");
+    }, 2000);
 }
 
 function runPVSTStep(step) {

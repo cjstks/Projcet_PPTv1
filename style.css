@@ -121,9 +121,74 @@ li {
 }
 
 @keyframes compareGlow {
-    0% { box-shadow: 0 0 15px #4FC3F7; }
-    50% { box-shadow: 0 0 30px #FFD700, 0 0 45px #FFD700; }
-    100% { box-shadow: 0 0 15px #4FC3F7; }
+    0% {
+        box-shadow: 0 0 15px #4FC3F7;
+        transform: scale(1);
+    }
+    25% {
+        box-shadow: 0 0 25px #FFD700, 0 0 35px #FFD700;
+        transform: scale(1.05);
+    }
+    50% {
+        box-shadow: 0 0 35px #FF6B6B, 0 0 50px #FF6B6B;
+        transform: scale(1.1);
+    }
+    75% {
+        box-shadow: 0 0 25px #9C27B0, 0 0 35px #9C27B0;
+        transform: scale(1.05);
+    }
+    100% {
+        box-shadow: 0 0 15px #4FC3F7;
+        transform: scale(1);
+    }
+}
+
+@keyframes pathCostPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px #FF6B6B;
+        background: #FF6B6B;
+    }
+    50% {
+        box-shadow: 0 0 40px #FF6B6B, 0 0 60px #FF6B6B;
+        background: #FF8A8A;
+        transform: scale(1.08);
+    }
+}
+
+@keyframes bridgeIdPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px #9C27B0;
+        background: #9C27B0;
+    }
+    50% {
+        box-shadow: 0 0 40px #9C27B0, 0 0 60px #9C27B0;
+        background: #B458C7;
+        transform: scale(1.08);
+    }
+}
+
+@keyframes designatedPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px #28a745;
+        background: #28a745;
+    }
+    50% {
+        box-shadow: 0 0 40px #28a745, 0 0 60px #28a745;
+        background: #34ce57;
+        transform: scale(1.08);
+    }
+}
+
+@keyframes alternatePulse {
+    0%, 100% {
+        box-shadow: 0 0 20px #dc3545;
+        background: #dc3545;
+    }
+    50% {
+        box-shadow: 0 0 40px #dc3545, 0 0 60px #dc3545;
+        background: #e85a6a;
+        transform: scale(1.08);
+    }
 }
 
 /* 다이어그램 및 노드 */
