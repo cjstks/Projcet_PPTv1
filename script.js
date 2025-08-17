@@ -54,8 +54,8 @@ function updateStepIndicator(type, current, total) {
 
 // 키보드 이벤트 리스너
 document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') nextStepOrSlide();
-    if (e.key === 'ArrowLeft') prevStep();
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') nextStepOrSlide();
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') prevStep();
 });
 
 // 다음 단계 또는 슬라이드
@@ -465,18 +465,18 @@ function sendPVSTBPDUs(vlan) {
     // 케이블 경로 정의 (사각형 네트워크의 모든 경로)
     const cablePaths = [
         // 시계방향으로 상단 케이블
-        { start: 'vlan10', end: 'vlan20', waypoints: [{x: 60, y: 40}, {x: 320, y: 40}] },
-        // 우측 케이블
-        { start: 'vlan20', end: 'vlan40', waypoints: [{x: 360, y: 60}, {x: 360, y: 220}] },
-        // 하단 케이블
-        { start: 'vlan40', end: 'vlan30', waypoints: [{x: 320, y: 260}, {x: 60, y: 260}] },
-        // 좌측 케이블
-        { start: 'vlan30', end: 'vlan10', waypoints: [{x: 40, y: 220}, {x: 40, y: 60}] },
-        // 반시계방향 경로들
-        { start: 'vlan10', end: 'vlan30', waypoints: [{x: 40, y: 60}, {x: 40, y: 220}] },
-        { start: 'vlan30', end: 'vlan40', waypoints: [{x: 60, y: 260}, {x: 320, y: 260}] },
-        { start: 'vlan40', end: 'vlan20', waypoints: [{x: 360, y: 220}, {x: 360, y: 60}] },
-        { start: 'vlan20', end: 'vlan10', waypoints: [{x: 320, y: 40}, {x: 60, y: 40}] }
+                { start: 'vlan10', end: 'vlan20', waypoints: [{x: 80, y: 80}, {x: 420, y: 80}] },
+                // 우측 케이블
+                { start: 'vlan20', end: 'vlan40', waypoints: [{x: 400, y: 60}, {x: 400, y: 300}] },
+                // 하단 케이블
+                { start: 'vlan40', end: 'vlan30', waypoints: [{x: 440, y: 300}, {x: 80, y: 300}] },
+                // 좌측 케이블
+                { start: 'vlan30', end: 'vlan10', waypoints: [{x: 40, y: 340}, {x: 40, y: 60}] },
+                // 반시계방향 경로들
+                { start: 'vlan10', end: 'vlan30', waypoints: [{x: 30, y: 60}, {x: 30, y: 300}] },
+                { start: 'vlan30', end: 'vlan40', waypoints: [{x: 80, y: 290}, {x: 440, y: 290}] },
+                { start: 'vlan40', end: 'vlan20', waypoints: [{x: 400, y: 300}, {x: 400, y: 60}] },
+                { start: 'vlan20', end: 'vlan10', waypoints: [{x: 420, y: 80}, {x: 60, y: 80}] }
     ];
 
     // 현재 VLAN에서 시작하는 모든 경로 찾기

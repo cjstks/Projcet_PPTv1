@@ -18,11 +18,11 @@
     <h2>왜 STP가 필요한가?</h2>
     <p>루프가 발생하면 브로드캐스트 스톰이 일어나며 네트워크가 마비됩니다.</p>
     <div class="loop-diagram" id="stormDiagram">
-        <svg width="100%" height="100%">
+        <svg width="110%" height="100%">
             <line x1="200" y1="60" x2="400" y2="200" stroke="white" stroke-width="4"/>
             <line x1="400" y1="200" x2="200" y2="340" stroke="white" stroke-width="4"/>
             <line x1="200" y1="340" x2="0" y2="200" stroke="white" stroke-width="4"/>
-            <line x1="0" y1="200" x2="200" y2="60" stroke="white" stroke-width="4"/>
+            <line x1="10" y1="200" x2="200" y2="60" stroke="white" stroke-width="4"/>
         </svg>
         <div class="node" id="sw1" style="top:20px; left:160px;">SW1</div>
         <div class="node" id="sw2" style="top:160px; left:360px;">SW2</div>
@@ -41,32 +41,32 @@
         <li><b>대체(차단) 포트</b>: 루프를 방지 하기 위해 차단이 된 포트</li>
     </ul>
     <div class="loop-diagram" id="stpDiagram">
-        <svg width="100%" height="100%">
-            <line id="link-r-s2" x1="200" y1="60" x2="400" y2="240" stroke="white" stroke-width="4"/>
-            <line id="link-r-s3" x1="200" y1="60" x2="0" y2="240" stroke="white" stroke-width="4"/>
-            <line id="link-s2-s3" x1="400" y1="240" x2="0" y2="240" stroke="white" stroke-width="4"/>
+        <svg width="110%" height="120%">
+            <line id="link-r-s2" x1="260" y1="60" x2="740" y2="520" stroke="white" stroke-width="4"/>
+            <line id="link-r-s3" x1="210" y1="60" x2="10" y2="240" stroke="white" stroke-width="4"/>
+            <line id="link-s2-s3" x1="430" y1="240" x2="10" y2="240" stroke="white" stroke-width="4"/>
         </svg>
-        <div class="node" id="stp-root" style="top:20px; left:160px;">
+        <div class="node" id="stp-root" style="top:0px; left:185px;">
             Root
             <div class="bridge-id" id="root-id">ID: 4096.001</div>
         </div>
-        <div class="node" id="stp-sw2" style="top:200px; left:360px;">
+        <div class="node" id="stp-sw2" style="top:200px; left:420px;">
             SW2
             <div class="bridge-id" id="sw2-id">ID: 8192.002</div>
         </div>
-        <div class="node" id="stp-sw3" style="top:200px; left:-40px;">
+        <div class="node" id="stp-sw3" style="top:200px; left:-50px;">
             SW3
             <div class="bridge-id" id="sw3-id">ID: 12288.003</div>
         </div>
 
         <!-- 루트 포트 -->
         <div class="port-label root-port" id="rp1" style="top: 190px; left: 30px;">Root Port</div>
-        <div class="port-label root-port" id="rp2" style="top: 190px; left: 300px;">Root Port</div>
+        <div class="port-label root-port" id="rp2" style="top: 190px; left: 360px;">Root Port</div>
 
         <!-- 지정 포트 -->
         <div class="port-label designated-port" id="dp1" style="top: 90px; left: 80px;">Designated Port</div>
-        <div class="port-label designated-port" id="dp2" style="top: 225px; left: 270px;">Designated Port</div>
-        <div class="port-label designated-port" id="dp3" style="top: 90px; left: 210px;">Designated Port</div>
+        <div class="port-label designated-port" id="dp2" style="top: 225px; left: 300px;">Designated Port</div>
+        <div class="port-label designated-port" id="dp3" style="top: 90px; left: 260px;">Designated Port</div>
 
         <!-- 대체 포트 -->
         <div class="port-label alternate-port" id="ap1" style="top: 225px; left: 40px;">Alternate Port</div>
@@ -80,15 +80,15 @@
     <p>VLAN마다 독립적으로 BPDU 전송</p>
     <div class="loop-diagram" id="pvstDiagram" style="width: 400px; height: 300px; position: relative;">
         <svg width="100%" height="100%" style="position:absolute; top:0; left:0; z-index:0;">
-            <line x1="40" y1="40" x2="360" y2="40" stroke="white" stroke-width="4"/>
-            <line x1="40" y1="40" x2="40" y2="260" stroke="white" stroke-width="4"/>
-            <line x1="40" y1="260" x2="360" y2="260" stroke="white" stroke-width="4"/>
-            <line x1="360" y1="40" x2="360" y2="260" stroke="white" stroke-width="4"/>
+            <line x1="40" y1="70" x2="410" y2="70" stroke="white" stroke-width="4"/>
+            <line x1="30" y1="40" x2="30" y2="300" stroke="white" stroke-width="4"/>
+            <line x1="40" y1="290" x2="400" y2="290" stroke="white" stroke-width="4"/>
+            <line x1="390" y1="40" x2="390" y2="280" stroke="white" stroke-width="4"/>
         </svg>
-        <div class="node" id="vlan10" style="top:20px; left:20px; background:#FFD700; z-index:1;">VLAN10</div>
-        <div class="node" id="vlan20" style="top:20px; right:20px; background:#FF4500; z-index:1;">VLAN20</div>
-        <div class="node" id="vlan30" style="bottom:20px; left:20px; background:#32CD32; z-index:1;">VLAN30</div>
-        <div class="node" id="vlan40" style="bottom:20px; right:20px; background:#1E90FF; z-index:1;">VLAN40</div>
+        <div class="node" id="vlan10" style="top:20px; left:-20px; background:#FFD700; z-index:1;">VLAN10</div>
+        <div class="node" id="vlan20" style="top:20px; right:-40px; background:#FF4500; z-index:1;">VLAN20</div>
+        <div class="node" id="vlan30" style="bottom:-40px; left:-20px; background:#32CD32; z-index:1;">VLAN30</div>
+        <div class="node" id="vlan40" style="bottom:-40px; right:-40px; background:#1E90FF; z-index:1;">VLAN40</div>
     </div>
     <div class="step-indicator" id="pvstStepIndicator">단계: 0/5</div>
 </section>

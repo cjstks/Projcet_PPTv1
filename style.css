@@ -39,6 +39,10 @@ body::before {
 h1, h2 {
     color: #4FC3F7;
     text-shadow: 2px 2px 5px black;
+    font-size: -webkit-xxx-large;
+}
+p{
+  font-size: xx-large;
 }
 
 ul {
@@ -50,6 +54,7 @@ ul {
 
 li {
     margin: 10px 0;
+    font-size: 27px;
 }
 
 /* 키프레임 애니메이션 */
@@ -94,8 +99,8 @@ li {
 }
 
 .node {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     background: #4FC3F7;
     display: flex;
@@ -141,6 +146,7 @@ li {
 
 .bridge-id.show {
     opacity: 1;
+    font-size: 18px;
 }
 
 .bridge-id.winner {
@@ -218,12 +224,15 @@ td {
 
 .root-port {
     background-color: #007bff; /* 파란색 */
+    font-size: 16px;
 }
 
 .designated-port {
     background-color: #28a745; /* 초록색 */
+    font-size: 16px;
 }
 
 .alternate-port {
     background-color: #dc3545; /* 빨간색 */
+    font-size: 16px;
 }
