@@ -163,6 +163,20 @@ li {
     transition: all 0.8s ease;
 }
 
+/* 링크 단절 상태 */
+.link-down {
+    stroke: red !important;
+    stroke-dasharray: 6, 6; /* 점선으로 표시 */
+    animation: linkBlink 1s infinite; /* 깜빡이는 효과 */
+}
+
+/* 단절 시 깜빡임 */
+@keyframes linkBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+
 .bpdu {
     position: absolute;
     width: 12px;

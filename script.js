@@ -30,7 +30,7 @@ function showSlide(index) {
     if (slides[index].querySelector('#rstpDiagram')) {
         rstpStep = 0;
         resetRSTPAnimation();
-        updateStepIndicator('rstp', rstpStep, 4);
+        updateStepIndicator('rstp', rstpStep, 8);
     }
 }
 
@@ -102,10 +102,10 @@ function nextStepOrSlide() {
     }
 
     if (slide.querySelector('#rstpDiagram')) {
-        if (rstpStep < 4) {
+        if (rstpStep < 8) {
             rstpStep++;
             runRSTPStep(rstpStep);
-            updateStepIndicator('rstp', rstpStep, 4);
+            updateStepIndicator('rstp', rstpStep, 8);
         } else if (current < slides.length - 1) {
             current++;
             showSlide(current);
@@ -178,7 +178,7 @@ function prevStep() {
             for (let i = 1; i <= rstpStep; i++) {
                 setTimeout(() => runRSTPStep(i), i * 300);
             }
-            updateStepIndicator('rstp', rstpStep, 4);
+            updateStepIndicator('rstp', rstpStep, 8);
         } else {
             // 단계가 0일 때는 이전 슬라이드로
             prevSlide();
@@ -260,6 +260,7 @@ function resetPVSTAnimation() {
 }
 
 function resetRSTPAnimation() {
+    // 노드 초기화
     const nodes = ['rstp-root', 'rstp-sw1', 'rstp-sw2', 'rstp-sw3'];
     nodes.forEach(id => {
         const node = document.getElementById(id);
@@ -269,7 +270,19 @@ function resetRSTPAnimation() {
         }
     });
 
+    // BPDU 초기화
     document.querySelectorAll('#rstpDiagram .bpdu').forEach(bpdu => bpdu.remove());
+
+    // 링크 상태 초기화
+    const links = ['link-sw1-sw3', 'link-sw1-sw2', 'link-sw2-sw3']; // 필요시 모든 링크 추가
+    links.forEach(id => {
+        const link = document.getElementById(id);
+        if (link) {
+            link.classList.remove('link-down');  // 단절 표시 제거
+            link.setAttribute('stroke', 'white');  // 기본 색상 복구
+            link.setAttribute('stroke-width', '4'); // 기본 두께 복구
+        }
+    });
 }
 
 // === 애니메이션 실행 함수들 ===
@@ -548,9 +561,12 @@ function runRSTPStep(step) {
     const root = document.getElementById('rstp-root');
     const sw1 = document.getElementById('rstp-sw1');
     const sw2 = document.getElementById('rstp-sw2');
+    const sw3 = document.getElementById('rstp-sw3');
+    const link_sw1_sw3 = document.getElementById('link-sw1-sw3'); // sw1-sw3 연결선 (케이블)
 
     switch (step) {
         case 1:
+            // Root 하이라이트
             if (root) {
                 root.style.background = '#FFD700';
                 root.classList.add('highlight');
@@ -558,22 +574,74 @@ function runRSTPStep(step) {
             break;
 
         case 2:
-            // 빠른 BPDU 교환
+            // root ↔ sw1 BPDU 교환
             if (root && sw1) createBPDU('rstpDiagram', root, sw1, '#FFD700');
-            if (root && sw2) createBPDU('rstpDiagram', root, sw2, '#FFD700');
             break;
 
         case 3:
-            if (sw2) {
-                sw2.style.background = '#32CD32';
-                sw2.classList.add('highlight');
+            // sw1 하이라이트
+            if (sw1) {
+                sw1.style.background = '#FF4500';
+                sw1.classList.add('highlight');
             }
             break;
 
         case 4:
+            // sw1 ↔ sw3 BPDU 교환
+            if (sw1 && sw3) createBPDU('rstpDiagram', sw1, sw3, '#FF4500');
+            if (sw3) {
+                sw3.style.background = '#ca45ff';
+                sw3.classList.add('highlight');
+                }
+            break;
+
+        case 5:
+            // 케이블 단절 (sw1-sw3 링크 끊김 표시)
+            if (link_sw1_sw3) {
+                link_sw1_sw3.classList.add('link-down');
+            }
+            // sw1, sw3 하이라이트 해제
             if (sw1) {
-                sw1.style.background = '#FF4500';
-                sw1.classList.add('highlight');
+                sw1.classList.remove('highlight');
+                sw1.style.background = '';
+            }
+            if (sw3) {
+                sw3.classList.remove('highlight');
+                sw3.style.background = '';
+            }
+            // === 추가: sw1-sw3 BPDU 애니메이션 제거 ===
+                bpduAnimations.forEach(anim => {
+                    if (anim.element && anim.element.closest('#rstpDiagram')) {
+                        if (anim.frameId) cancelAnimationFrame(anim.frameId);
+                        anim.element.remove();
+                    }
+                });
+                bpduAnimations = bpduAnimations.filter(anim =>
+                    !(anim.element && anim.element.closest('#rstpDiagram'))
+                );
+
+            break;
+
+
+        case 6:
+            // root ↔ sw2 BPDU 교환
+            if (root && sw2) {
+                sw2.style.background = '#32CD32';
+                sw2.classList.add('highlight');
+                createBPDU('rstpDiagram', root, sw2, '#FFD700');
+            }
+            break;
+
+        case 7:
+            // sw2 ↔ sw3 BPDU 교환
+            if (sw2 && sw3) createBPDU('rstpDiagram', sw2, sw3, '#32CD32');
+            break;
+
+        case 8:
+            // sw3 하이라이트 (최종 경로 안정화)
+            if (sw3) {
+                sw3.style.background = '#ca45ff';
+                sw3.classList.add('highlight');
             }
             break;
     }

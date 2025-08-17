@@ -99,17 +99,21 @@
     <p>빠른 수렴 (수 초 내 복구)</p>
     <div class="loop-diagram" id="rstpDiagram" style="width:400px; height:300px; position:relative;">
         <svg width="100%" height="100%" style="position:absolute; top:0; left:0; z-index:0;">
-            <line x1="200" y1="40" x2="390" y2="180" stroke="white" stroke-width="4"/>
-            <line x1="240" y1="40" x2="14" y2="200" stroke="white" stroke-width="4"/>
-            <line x1="60" y1="200" x2="300" y2="390" stroke="white" stroke-width="4"/>
-            <line x1="400" y1="180" x2="0" y2="480" stroke="white" stroke-width="4"/>
+            <!-- Root ↔ SW1 -->
+            <line id="link-root-sw1" x1="200" y1="40" x2="390" y2="180" stroke="white" stroke-width="4"/>
+            <!-- Root ↔ SW2 -->
+            <line id="link-root-sw2" x1="240" y1="40" x2="14" y2="200" stroke="white" stroke-width="4"/>
+            <!-- SW2 ↔ SW3 -->
+            <line id="link-sw2-sw3" x1="60" y1="200" x2="300" y2="390" stroke="white" stroke-width="4"/>
+            <!-- SW1 ↔ SW3 -->
+            <line id="link-sw1-sw3" x1="400" y1="180" x2="0" y2="480" stroke="white" stroke-width="4"/>
         </svg>
         <div class="node" id="rstp-root" style="top:20px; left:180px;">Root</div>
         <div class="node" id="rstp-sw1" style="top:130px; left:360px;">SW1</div>
         <div class="node" id="rstp-sw2" style="top:130px; left:0px;">SW2</div>
         <div class="node" id="rstp-sw3" style="top:270px; left:180px;">SW3</div>
     </div>
-    <div class="step-indicator" id="rstpStepIndicator">단계: 0/4</div>
+    <div class="step-indicator" id="rstpStepIndicator">단계: 0/8</div>
 </section>
 
 <!-- MSTP -->
