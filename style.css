@@ -320,10 +320,16 @@ td {
     }
 
     .loop-diagram {
-        width: 350px;
-        height: 350px;
-        transform: scale(1.1);
+        width: 80vw;
+        height: 80vw;
+        max-width: 400px;
+        max-height: 400px;
     }
+    #stpDiagram {
+      transform: scale(0.9);   /* 크기 줄이기 */
+      transform-origin: center; /* 중심 기준으로 축소 */
+    }
+
 
     .node {
         width: 90px;
@@ -333,7 +339,7 @@ td {
 
     table {
         font-size: 1.1rem;
-        transform: scale(1.1);
+        transform: scale(0.9);
     }
 
     th, td {
