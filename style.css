@@ -8,6 +8,7 @@ body {
     font-size: 20px;
 }
 
+
 body::before {
     content: "";
     position: fixed;
@@ -26,23 +27,21 @@ body::before {
     left: 0;
     padding: 10px;
     color: white;
-    background: rgba(0,0,0,0); /* 반투명 배경 */
-    z-index: 1000; /* 슬라이드 위로 표시 */
+    background: rgba(0,0,0,0);
+    z-index: 1000;
+    top: 0;
 }
+
 #footer {
     position: fixed;
     bottom: 0;
-    right: 0;            /* 오른쪽 붙이기 */
-    padding: 10px 20px;  /* 상하 10px, 좌우 20px */
+    right: 0;
+    padding: 10px 20px;
     color: white;
-    background: rgba(0,0,0,0); /* 투명 배경 */
+    background: rgba(0,0,0,0);
     z-index: 1000;
-    width: auto;         /* 내용 크기만큼 */
+    width: auto;
 }
-
-#header { top: 0; }
-#footer { bottom: 0; }
-
 
 /* 슬라이드 관련 */
 .slide {
@@ -67,17 +66,20 @@ h1, h2 {
     text-shadow: 2px 2px 5px black;
     font-size: -webkit-xxx-large;
 }
+
 h1-1 {
     color: #4FC3F7;
     text-shadow: 2px 2px 5px black;
     font-size: 26px;
 }
+
 h3 {
     color: white;
 }
-p{
-  font-size: xx-large;
-  color: white;
+
+p {
+    font-size: xx-large;
+    color: white;
 }
 
 ul {
@@ -143,52 +145,9 @@ li {
     }
 }
 
-@keyframes pathCostPulse {
-    0%, 100% {
-        box-shadow: 0 0 20px #FF6B6B;
-        background: #FF6B6B;
-    }
-    50% {
-        box-shadow: 0 0 40px #FF6B6B, 0 0 60px #FF6B6B;
-        background: #FF8A8A;
-        transform: scale(1.08);
-    }
-}
-
-@keyframes bridgeIdPulse {
-    0%, 100% {
-        box-shadow: 0 0 20px #9C27B0;
-        background: #9C27B0;
-    }
-    50% {
-        box-shadow: 0 0 40px #9C27B0, 0 0 60px #9C27B0;
-        background: #B458C7;
-        transform: scale(1.08);
-    }
-}
-
-@keyframes designatedPulse {
-    0%, 100% {
-        box-shadow: 0 0 20px #28a745;
-        background: #28a745;
-    }
-    50% {
-        box-shadow: 0 0 40px #28a745, 0 0 60px #28a745;
-        background: #34ce57;
-        transform: scale(1.08);
-    }
-}
-
-@keyframes alternatePulse {
-    0%, 100% {
-        box-shadow: 0 0 20px #dc3545;
-        background: #dc3545;
-    }
-    50% {
-        box-shadow: 0 0 40px #dc3545, 0 0 60px #dc3545;
-        background: #e85a6a;
-        transform: scale(1.08);
-    }
+@keyframes linkBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
 }
 
 /* 다이어그램 및 노드 */
@@ -255,28 +214,12 @@ li {
     color: #000;
 }
 
-/* 링크 및 BPDU */
-.link {
-    position: absolute;
-    background: #fff;
-    height: 4px;
-    transform-origin: left center;
-    transition: all 0.8s ease;
-}
-
 /* 링크 단절 상태 */
 .link-down {
     stroke: red !important;
-    stroke-dasharray: 6, 6; /* 점선으로 표시 */
-    animation: linkBlink 1s infinite; /* 깜빡이는 효과 */
+    stroke-dasharray: 6, 6;
+    animation: linkBlink 1s infinite;
 }
-
-/* 단절 시 깜빡임 */
-@keyframes linkBlink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-}
-
 
 .bpdu {
     position: absolute;
@@ -339,16 +282,54 @@ td {
 }
 
 .root-port {
-    background-color: #007bff; /* 파란색 */
+    background-color: #007bff;
     font-size: 16px;
 }
 
 .designated-port {
-    background-color: #28a745; /* 초록색 */
+    background-color: #28a745;
     font-size: 16px;
 }
 
 .alternate-port {
-    background-color: #dc3545; /* 빨간색 */
+    background-color: #dc3545;
     font-size: 16px;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .slide {
+        padding: 20px;
+    }
+
+    h1, h2 {
+        font-size: x-large;
+    }
+
+    p {
+        font-size: large;
+    }
+
+    li {
+        font-size: 18px;
+    }
+
+    .loop-diagram {
+        width: 300px;
+        height: 300px;
+    }
+
+    .node {
+        width: 80px;
+        height: 80px;
+        font-size: 14px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
 }
