@@ -169,7 +169,7 @@ li {
     font-weight: bold;
     position: absolute;
     box-shadow: 0 0 15px #4FC3F7;
-    transition: all 0.8s ease;
+    transition: all 1.5s ease-in-out; /* 1s → 1.5s */
 }
 
 .node.looping {

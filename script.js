@@ -1,7 +1,7 @@
 // 전역 변수
     let current = 0;
     const slides = document.querySelectorAll('.slide');
-    let stpStep = 0, pvstStep = 0, rstpStep = 0;
+    let stpStep = 0, pvstStep = 0, rstpStep = 0, mstpStep = 0;
     let bpduAnimations = [];
     let stormStep = 0;
 
@@ -20,6 +20,8 @@
         if (slides[index].querySelector('#stpDiagram')) {
             stpStep = 0;
             resetSTPAnimation();
+            // 여기서 Root Bridge 초기화
+            setRootBridge("stp-root"); // 항상 SW1로 초기화
             updateStepIndicator('stp', stpStep, 9);
         }
         if (slides[index].querySelector('#pvstDiagram')) {
@@ -31,6 +33,11 @@
             rstpStep = 0;
             resetRSTPAnimation();
             updateStepIndicator('rstp', rstpStep, 8);
+        }
+        if (slides[index].querySelector('#mstpDiagram')){
+            mstpStep = 0;
+            resetMSTPAnimation();
+            updateStepIndicator('mstp', mstpStep, 5);
         }
     }
 
@@ -161,6 +168,18 @@
             return;
         }
 
+        if (slide.querySelector('#mstpDiagram')){
+            if (mstpStep < 5) {
+                mstpStep++;
+                runMSTPStep(mstpStep);
+                updateStepIndicator('mstp', mstpStep, 5);
+            } else if (current < slides.length - 1) {
+                current++;
+                showSlide(current);
+            }
+            return;
+        }
+
         // 일반 슬라이드
         if (current < slides.length - 1) {
             current++;
@@ -234,6 +253,22 @@
             return;
         }
 
+        if (slide.querySelector('#mstpDiagram')) {
+            if (mstpStep > 0) {
+                mstpStep--;
+                resetMSTPAnimation();
+                // 이전 단계까지 순차적으로 실행
+                for (let i = 1; i <= mstpStep; i++) {
+                    setTimeout(() => runMSTPStep(i), i * 400);
+                }
+                updateStepIndicator('mstp', mstpStep, 5)
+            } else {
+                // 단계가 0일 때는 이전 슬라이드로
+                prevSlide();
+            }
+            return;
+        }
+
         // 애니메이션 슬라이드가 아닌 경우 이전 슬라이드로
         prevSlide();
     }
@@ -294,6 +329,19 @@
         document.querySelectorAll('#stpDiagram .bpdu').forEach(bpdu => bpdu.remove());
     }
 
+    function setRootBridge(switchId) {
+            // 모든 스위치에서 'root' 클래스 제거
+            document.querySelectorAll('.node').forEach(sw => {
+                sw.classList.remove('root');
+            });
+
+            // 지정한 스위치에 'root' 클래스 추가
+                const rootSwitch = document.getElementById(switchId);
+                if (rootSwitch) {
+                    rootSwitch.classList.add('root');
+                }
+        }
+
     function resetPVSTAnimation() {
         const vlans = ['vlan10', 'vlan20', 'vlan30', 'vlan40'];
         vlans.forEach(id => {
@@ -331,6 +379,114 @@
                 link.setAttribute('stroke-width', '4');
             }
         });
+    }
+
+    function resetMSTPAnimation() {
+        const moveDistance = 250;
+
+        // 기존 노드 초기화
+        const oldNodes = [
+            {id: 'old1', x: 350, y: 0},
+            {id: 'old2', x: 500, y: 150},
+            {id: 'old3', x: 350, y: 300},
+            {id: 'old4', x: 200, y: 150}
+        ];
+
+        oldNodes.forEach(node => {
+            const element = document.getElementById(node.id);
+            if (element) {
+                element.style.transform = 'translateX(0)';
+                element.style.left = node.x + 'px';
+                element.style.top = node.y + 'px';
+                element.style.background = '#4FC3F7';
+                element.classList.remove('highlight');
+            }
+        });
+
+        // 새로운 노드 초기화
+        const newNodes = [
+            {id: 'new1', x: 350, y: 0},
+            {id: 'new2', x: 500, y: 150},
+            {id: 'new3', x: 350, y: 300},
+            {id: 'new4', x: 200, y: 150}
+        ];
+
+        newNodes.forEach(node => {
+            const element = document.getElementById(node.id);
+            if (element) {
+                element.style.opacity = '0';
+                element.style.transform = 'translateX(0)';
+                element.style.left = node.x + 'px';
+                element.style.top = node.y + 'px';
+                element.style.background = '#4FC3F7';
+                element.classList.remove('highlight');
+            }
+        });
+
+        // 라인 초기화
+        const lines = [
+            {id:'line1', x1:250, y1:190, x2:390, y2:50},
+            {id:'line2', x1:400, y1:50, x2:540, y2:190},
+            {id:'line3', x1:550, y1:220, x2:410, y2:360},
+            {id:'line4', x1:390, y1:360, x2:250, y2:220}
+        ];
+
+        lines.forEach(l => {
+            const line = document.getElementById(l.id);
+            if (line) {
+                line.setAttribute('x1', l.x1);
+                line.setAttribute('y1', l.y1);
+                line.setAttribute('x2', l.x2);
+                line.setAttribute('y2', l.y2);
+                line.setAttribute('stroke', 'white');
+                line.setAttribute('stroke-width', '4');
+            }
+        });
+
+        // 새로운 라인 초기화
+        const newLines = [
+            {id:'newLine1', x1:250, y1:190,  x2:390, y2:50},
+            {id:'newLine2', x1:400, y1:50,  x2:540, y2:190},
+            {id:'newLine3', x1:550, y1:220, x2:410, y2:360},
+            {id:'newLine4', x1:390, y1:360, x2:250, y2:220}
+        ];
+
+        newLines.forEach(l => {
+            const line = document.getElementById(l.id);
+            if (line) {
+                line.style.opacity = '0';
+                line.setAttribute('x1', l.x1);
+                line.setAttribute('y1', l.y1);
+                line.setAttribute('x2', l.x2);
+                line.setAttribute('y2', l.y2);
+                line.setAttribute('stroke', 'white');
+                line.setAttribute('stroke-width', '4');
+            }
+        });
+
+        // 중앙 라인 초기화
+        const centerLine = document.getElementById('center-line');
+        if (centerLine) {
+            centerLine.style.opacity = '0';
+        }
+
+        // 화살표 초기화
+        const arrows = ['arrow-sw1', 'arrow-sw3'];
+        arrows.forEach(id => {
+            const arrow = document.getElementById(id);
+            if (arrow) arrow.style.opacity = '0';
+        });
+
+        // VLAN 텍스트 초기화
+        const vlanTexts = ['vlan-sw1', 'vlan-sw2'];
+        vlanTexts.forEach(id => {
+            const text = document.getElementById(id);
+            if (text) text.style.opacity = '0';
+        });
+
+        // MST Region 텍스트 초기화
+        const mstRegion = document.getElementById('mst-region');
+        if (mstRegion) mstRegion.style.opacity = '0';
     }
 
     // === 애니메이션 실행 함수들 ===
@@ -480,6 +636,7 @@
 
         // Root Bridge 선정
         if (root) {
+            root.childNodes[0].nodeValue = "Root"; // "SW1" -> "Root"
             root.style.background = '#FFD700';
             root.classList.add('highlight');
         }
@@ -900,6 +1057,66 @@
                 break;
         }
     }
+
+    function runMSTPStep(step) {
+        const centerLine = document.getElementById('center-line');
+        const oldNodes = ['old1','old2','old3','old4'].map(id => document.getElementById(id));
+        const newNodes = ['new1','new2','new3','new4'].map(id => document.getElementById(id));
+        const lines = ['line1','line2','line3','line4'].map(id => document.getElementById(id));
+        const newLines = ['newLine1','newLine2','newLine3','newLine4'].map(id => document.getElementById(id));
+        const moveDistance = 250;
+
+        switch(step) {
+            case 1:
+                if(centerLine) centerLine.style.opacity='1';
+                break;
+
+            case 2:
+                oldNodes.forEach(node => {
+                    if(node) node.style.transform = `translateX(-${moveDistance}px)`;
+                });
+                newNodes.forEach(node => {
+                    if(node) {
+                        node.style.opacity='1';
+                        node.style.transform = `translateX(${moveDistance}px)`;
+                    }
+                });
+                // 기존 라인 이동
+                lines.forEach(line => {
+                    if(line) line.setAttribute('x1', parseInt(line.getAttribute('x1')) - moveDistance);
+                    if(line) line.setAttribute('x2', parseInt(line.getAttribute('x2')) - moveDistance);
+                });
+                // 새로운 라인 등장
+                newLines.forEach(line => {
+                    if(line) {
+                        line.style.opacity='1';
+                        line.setAttribute('x1', parseInt(line.getAttribute('x1')) + moveDistance);
+                        line.setAttribute('x2', parseInt(line.getAttribute('x2')) + moveDistance);
+                    }
+                });
+                break;
+
+            case 3:
+                const arrowSw1 = document.getElementById('arrowBox-sw1');
+                const arrowSw3 = document.getElementById('arrowBox-sw3');
+                if(arrowSw1) arrowSw1.style.opacity='1';
+                if(arrowSw3) arrowSw3.style.opacity='1';
+                break;
+
+            case 4:
+                ['vlan-sw1','vlan-sw2'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.style.opacity='1';
+                });
+                break;
+
+            case 5:
+                const mstRegion = document.getElementById('mst-region');
+                if(mstRegion) mstRegion.style.opacity='1';
+                break;
+        }
+    }
+
 
     function createBPDU(containerId, startNode, endNode, color) {
         if (!startNode || !endNode) return;
