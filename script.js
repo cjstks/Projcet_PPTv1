@@ -471,22 +471,26 @@
         }
 
         // 화살표 초기화
-        const arrows = ['arrow-sw1', 'arrow-sw3'];
+        const arrows = ['arrowBox-sw1', 'arrowBox-sw3', 'arrowBox-sw1_1', 'arrowBox-sw3_1'];
         arrows.forEach(id => {
             const arrow = document.getElementById(id);
             if (arrow) arrow.style.opacity = '0';
         });
 
         // VLAN 텍스트 초기화
-        const vlanTexts = ['vlan-sw1', 'vlan-sw2'];
+        const vlanTexts = ['vlan-sw1', 'vlan-sw2', 'vlan-sw3', 'vlan-sw4'];
         vlanTexts.forEach(id => {
             const text = document.getElementById(id);
             if (text) text.style.opacity = '0';
         });
 
         // MST Region 텍스트 초기화
-        const mstRegion = document.getElementById('mst-region');
-        if (mstRegion) mstRegion.style.opacity = '0';
+        const mstRegion = ['mst-region_A', 'mst-region_B'];
+        mstRegion.forEach(id => {
+            const mstRegion = document.getElementById(id);
+            if (mstRegion) mstRegion.style.opacity = '0';
+        });
+
     }
 
     // === 애니메이션 실행 함수들 ===
@@ -1068,10 +1072,6 @@
 
         switch(step) {
             case 1:
-                if(centerLine) centerLine.style.opacity='1';
-                break;
-
-            case 2:
                 oldNodes.forEach(node => {
                     if(node) node.style.transform = `translateX(-${moveDistance}px)`;
                 });
@@ -1094,26 +1094,39 @@
                         line.setAttribute('x2', parseInt(line.getAttribute('x2')) + moveDistance);
                     }
                 });
+
+                if(centerLine) centerLine.style.opacity='1';
+                break;
+
+            case 2:
+                const arrowSw1 = document.getElementById('arrowBox-sw1');
+                const arrowSw3 = document.getElementById('arrowBox-sw3');
+                const arrowSw1_1 = document.getElementById('arrowBox-sw1_1');
+                const arrowSw3_1 = document.getElementById('arrowBox-sw3_1');
+                if(arrowSw1) arrowSw1.style.opacity='1';
+                if(arrowSw3) arrowSw3.style.opacity='1';
+                if(arrowSw1_1) arrowSw1_1.style.opacity='1';
+                if(arrowSw3_1) arrowSw3_1.style.opacity='1';
                 break;
 
             case 3:
-                const arrowSw1 = document.getElementById('arrowBox-sw1');
-                const arrowSw3 = document.getElementById('arrowBox-sw3');
-                if(arrowSw1) arrowSw1.style.opacity='1';
-                if(arrowSw3) arrowSw3.style.opacity='1';
-                break;
-
-            case 4:
-                ['vlan-sw1','vlan-sw2'].forEach(id => {
+                ['vlan-sw1','vlan-sw2','vlan-sw3','vlan-sw4'].forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.style.opacity='1';
                 });
                 break;
 
-            case 5:
-                const mstRegion = document.getElementById('mst-region');
-                if(mstRegion) mstRegion.style.opacity='1';
+            case 4:
+                ['mst-region_A', 'mst-region_B'].forEach(id => {
+                    const mstRegion = document.getElementById(id);
+                    if(mstRegion) mstRegion.style.opacity='1';
+                });
                 break;
+
+            case 5:
+//                const mstRegion = document.getElementById('mst-region');
+//                if(mstRegion) mstRegion.style.opacity='1';
+//                break;
         }
     }
 
