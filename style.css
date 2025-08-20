@@ -325,12 +325,89 @@ td {
         max-width: 400px;
         max-height: 400px;
     }
+
     #stpDiagram {
-      transform: scale(0.9);   /* 크기 줄이기 */
-      transform-origin: center; /* 중심 기준으로 축소 */
+        transform: scale(0.9);   /* 크기 줄이기 */
+        transform-origin: center; /* 중심 기준으로 축소 */
     }
 
+    /* MSTP 다이어그램만 특별 처리 */
+    #mstpDiagram {
+        width: 800px !important;
+        height: 800px !important;
+        transform: scale(0.5) !important;
+        transform-origin: center center !important;
+        margin: 20px auto !important;
+        position: relative !important;
+        left: -20px !important;
+        margin-left: 0 !important;
+        overflow: visible !important;
+    }
 
+    /* MSTP 다이어그램 내부 노드들만 조정 */
+    #mstpDiagram .node {
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 40px !important;
+        line-height: 70px !important;
+    }
+
+    /* MSTP 노드 위치 조정 */
+    #mstpDiagram #old1 { top: 20px !important; left: 300px !important; }
+    #mstpDiagram #old2 { top: 140px !important; left: 420px !important; }
+    #mstpDiagram #old3 { top: 260px !important; left: 300px !important; }
+    #mstpDiagram #old4 { top: 140px !important; left: 200px !important; }
+    #mstpDiagram #new1 { top: 20px !important; left: 300px !important; }
+    #mstpDiagram #new2 { top: 140px !important; left: 420px !important; }
+    #mstpDiagram #new3 { top: 260px !important; left: 300px !important; }
+    #mstpDiagram #new4 { top: 140px !important; left: 200px !important; }
+
+    /* MSTP VLAN 텍스트들 */
+    #mstpDiagram #vlan-sw1 {top: -20px !important; width: 190px !important; height: 20px !important; font-size: 24px !important;}
+    #mstpDiagram #vlan-sw2,
+    #mstpDiagram #vlan-sw3,
+    #mstpDiagram #vlan-sw4 {
+        font-size: 10px !important;
+        padding: 3px 6px !important;
+    }
+
+    /* MSTP Region 텍스트들 */
+    #mstpDiagram #mst-region_A,
+    #mstpDiagram #mst-region_B {
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
+    /* MSTP SVG 라인들 */
+    #mstpDiagram svg {
+        width: 200% !important;
+        height: 150% !important;
+        left: -12% !important;
+        top: -5% !important;
+    }
+
+    #mstpDiagram svg line {
+        stroke-width: 2 !important;
+    }
+
+    /* MSTP 중앙선 */
+    #mstpDiagram #center-line {
+        width: 1px !important;
+        left: 345px !important;
+    }
+
+    /* MSTP 반투명 박스들 */
+    #mstpDiagram #arrowBox-sw1,
+    #mstpDiagram #arrowBox-sw3,
+    #mstpDiagram #arrowBox-sw1_1,
+    #mstpDiagram #arrowBox-sw3_1 {
+        width: 280px !important;
+        height: 185px !important;
+    }
+
+    /* 기존 다른 요소들은 그대로 유지 */
     .node {
         width: 90px;
         height: 90px;
@@ -358,5 +435,33 @@ td {
     .bridge-id.show {
         font-size: 1.1rem;
     }
+}
 
+/* 작은 스마트폰에서 MSTP만 더 축소 */
+@media (max-width: 480px) {
+    #mstpDiagram {
+        transform: scale(0.35) !important;
+        margin: 10px auto !important;
+    }
+
+    #mstpDiagram .node {
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 10px !important;
+        line-height: 60px !important;
+    }
+
+    #mstpDiagram #vlan-sw1,
+    #mstpDiagram #vlan-sw2,
+    #mstpDiagram #vlan-sw3,
+    #mstpDiagram #vlan-sw4 {
+        font-size: 8px !important;
+        padding: 2px 4px !important;
+    }
+
+    #mstpDiagram #mst-region_A,
+    #mstpDiagram #mst-region_B {
+        font-size: 10px !important;
+        padding: 4px 8px !important;
+    }
 }

@@ -1130,6 +1130,132 @@
         }
     }
 
+    // MSTP 다이어그램에서 라인이 노드와 함께 움직이도록 하는 함수들
+
+    // 노드의 중심 좌표를 계산하는 함수
+    function getNodeCenter(nodeId) {
+        const node = document.getElementById(nodeId);
+        if (!node) return { x: 0, y: 0 };
+
+        const rect = node.getBoundingClientRect();
+
+        // 부모 요소 기준 좌표로 변환하려면 offsetParent 위치 고려
+        const parentRect = node.parentElement.getBoundingClientRect();
+
+        const x = rect.left - parentRect.left + rect.width / 2;
+        const y = rect.top - parentRect.top + rect.height / 2;
+
+        return { x, y };
+    }
+
+    // 라인 좌표를 업데이트하는 함수
+    function updateLinePositions() {
+        // 화면 너비가 768px 이하일 때 모바일로 간주
+        const isMobile = window.innerWidth <= 768;
+
+        const scale = isMobile ? 0.5 : 1; // 모바일이면 CSS scale 0.5 적용
+        const offsetX = isMobile ? 0 : 0; // 필요 시 조정
+        const offsetY = isMobile ? 0 : 0;
+
+        const oldNodes = ['old1','old2','old3','old4'].map(id => document.getElementById(id));
+        const newNodes = ['new1','new2','new3','new4'].map(id => document.getElementById(id));
+
+        function getNodeCenter(node) {
+            if (!node) return { x: 0, y: 0 };
+            const rect = node.getBoundingClientRect();
+            const parentRect = node.parentElement.getBoundingClientRect();
+            return {
+                x: (rect.left - parentRect.left + rect.width / 2) / scale + offsetX,
+                y: (rect.top - parentRect.top + rect.height / 2) / scale + offsetY
+            };
+        }
+
+        // 기존 라인
+        const lines = ['line1','line2','line3','line4'];
+        const oldCenters = oldNodes.map(getNodeCenter);
+        lines.forEach((lineId, idx) => {
+            const line = document.getElementById(lineId);
+            if (line) {
+                const from = oldCenters[idx];
+                const to = oldCenters[(idx + 1) % oldCenters.length];
+                line.setAttribute('x1', from.x);
+                line.setAttribute('y1', from.y);
+                line.setAttribute('x2', to.x);
+                line.setAttribute('y2', to.y);
+            }
+        });
+
+        // 새로운 라인
+        const newLines = ['newLine1','newLine2','newLine3','newLine4'];
+        const newCenters = newNodes.map(getNodeCenter);
+        newLines.forEach((lineId, idx) => {
+            const line = document.getElementById(lineId);
+            if (line) {
+                const from = newCenters[idx];
+                const to = newCenters[(idx + 1) % newCenters.length];
+                line.setAttribute('x1', from.x);
+                line.setAttribute('y1', from.y);
+                line.setAttribute('x2', to.x);
+                line.setAttribute('y2', to.y);
+            }
+        });
+    }
+
+    // 리사이즈 이벤트에서도 모바일 체크 적용
+    window.addEventListener('resize', () => {
+        setTimeout(updateLinePositions, 100);
+    });
+
+
+    // 노드들의 위치 변화를 감지하고 라인 업데이트
+    function observeNodePositions() {
+        const nodes = ['old1', 'old2', 'old3', 'old4', 'new1', 'new2', 'new3', 'new4'];
+
+        nodes.forEach(nodeId => {
+            const node = document.getElementById(nodeId);
+            if (node) {
+                // Mutation Observer로 스타일 변화 감지
+                const observer = new MutationObserver(() => {
+                    updateLinePositions();
+                });
+
+                observer.observe(node, {
+                    attributes: true,
+                    attributeFilter: ['style']
+                });
+
+                // Transition 이벤트도 감지
+                node.addEventListener('transitionstart', updateLinePositions);
+                node.addEventListener('transitionend', updateLinePositions);
+            }
+        });
+    }
+
+    // 초기화 및 주기적 업데이트
+    function initMSTPLines() {
+        // 초기 라인 위치 설정
+        updateLinePositions();
+
+        // 노드 위치 변화 감지 시작
+        observeNodePositions();
+
+        // 안전을 위한 주기적 업데이트 (애니메이션 중)
+        const intervalId = setInterval(updateLinePositions, 50);
+
+        // 10초 후 주기적 업데이트 중단 (애니메이션 완료 후)
+        setTimeout(() => {
+            clearInterval(intervalId);
+        }, 10000);
+    }
+
+    // 페이지 로드 후 초기화
+    document.addEventListener('DOMContentLoaded', initMSTPLines);
+
+    // 윈도우 리사이즈 시에도 라인 위치 재계산
+    window.addEventListener('resize', () => {
+        setTimeout(updateLinePositions, 100);
+    });
+
 
     function createBPDU(containerId, startNode, endNode, color) {
         if (!startNode || !endNode) return;
