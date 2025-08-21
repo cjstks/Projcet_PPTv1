@@ -37,7 +37,7 @@
         if (slides[index].querySelector('#mstpDiagram')){
             mstpStep = 0;
             resetMSTPAnimation();
-            updateStepIndicator('mstp', mstpStep, 5);
+            updateStepIndicator('mstp', mstpStep, 9);
         }
     }
 
@@ -169,10 +169,10 @@
         }
 
         if (slide.querySelector('#mstpDiagram')){
-            if (mstpStep < 5) {
+            if (mstpStep < 9) {
                 mstpStep++;
                 runMSTPStep(mstpStep);
-                updateStepIndicator('mstp', mstpStep, 5);
+                updateStepIndicator('mstp', mstpStep, 9);
             } else if (current < slides.length - 1) {
                 current++;
                 showSlide(current);
@@ -261,7 +261,7 @@
                 for (let i = 1; i <= mstpStep; i++) {
                     setTimeout(() => runMSTPStep(i), i * 400);
                 }
-                updateStepIndicator('mstp', mstpStep, 5)
+                updateStepIndicator('mstp', mstpStep, 9)
             } else {
                 // 단계가 0일 때는 이전 슬라이드로
                 prevSlide();
@@ -1124,11 +1124,67 @@
                 break;
 
             case 5:
-//                const mstRegion = document.getElementById('mst-region');
-//                if(mstRegion) mstRegion.style.opacity='1';
-//                break;
+                highlightArrowBox('arrowBox-sw1');
+                break;
+
+            case 6:
+                resetArrowBox('arrowBox-sw1');
+                highlightArrowBox('arrowBox-sw3');
+                break;
+
+            case 7:
+                resetArrowBox('arrowBox-sw3');
+                highlightArrowBox('arrowBox-sw1_1');
+                break;
+
+            case 8:
+                resetArrowBox('arrowBox-sw1_1');
+                highlightArrowBox('arrowBox-sw3_1');
+                break;
+
+            case 9:
+                resetArrowBox('arrowBox-sw3_1');
+                break;
         }
     }
+
+    // 하이라이트 효과 함수
+    function highlightArrowBox(elementId) {
+        const box = document.getElementById(elementId);
+        if(box) {
+            box.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease';
+            box.style.transform = 'scale(1.1)';
+            box.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.8)';
+            box.style.background = 'rgba(255, 215, 0, 0.2)';
+        }
+    }
+
+    function resetArrowBox(elementId) {
+        const box = document.getElementById(elementId);
+        if(box) {
+            box.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease';
+            box.style.transform = 'scale(1)';
+            box.style.boxShadow = 'none';
+
+            // 각 박스별 원래 배경색으로 리셋
+            switch(elementId) {
+                case 'arrowBox-sw1':
+                    box.style.background = 'rgba(255, 68, 68, 0.2)';
+                    break;
+                case 'arrowBox-sw3':
+                    box.style.background = 'rgba(76, 175, 80, 0.2)';
+                    break;
+                case 'arrowBox-sw1_1':
+                    box.style.background = 'rgba(121, 85, 72, 0.4)';
+                    break;
+                case 'arrowBox-sw3_1':
+                    box.style.background = 'rgba(233, 30, 99, 0.2)';
+                    break;
+            }
+        }
+    }
+
+
 
     // MSTP 다이어그램에서 라인이 노드와 함께 움직이도록 하는 함수들
 
