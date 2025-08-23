@@ -77,6 +77,10 @@ h3 {
     color: white;
 }
 
+h4 {
+    color: white;
+}
+
 p {
     font-size: xx-large;
     color: white;
@@ -149,7 +153,48 @@ li {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
 }
+/* 패킷 애니메이션 스타일 */
+.packet {
+    opacity: 0;
+    filter: drop-shadow(0 0 3px #ff4444);
+}
 
+.packet.active {
+    opacity: 1;
+}
+
+/* 케이블 라인 강화 효과 */
+.active-link {
+    filter: drop-shadow(0 0 2px #00ff88);
+    transition: all 0.3s ease;
+}
+
+.active-link.transmitting {
+    stroke-width: 6;
+    filter: drop-shadow(0 0 4px #00ff88);
+    animation: cableGlow 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes cableGlow {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+/* 스톰 상태에서의 패킷 스타일 */
+.packet.storm-mode {
+    fill: #ff0000 !important;
+    r: 5;
+    filter: drop-shadow(0 0 5px #ff0000);
+}
+
+.packet.overload-mode {
+    fill: #cc0000 !important;
+    opacity: 0.3;
+}
+
+.diagram-title {
+    color: white;
+}
 /* 다이어그램 및 노드 */
 .loop-diagram {
     margin-top: 40px;

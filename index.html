@@ -25,18 +25,112 @@
 <!-- 2. 필요성 -->
 <section class="slide">
     <h2>왜 STP가 필요한가?</h2>
-    <p>루프가 발생하면 브로드캐스트 스톰이 일어나며 네트워크가 마비됩니다.</p>
+
+    <div class="necessity-content">
+        <div class="redundancy-section">
+            <h3>🔄 L2 스위치 이중화의 필요성</h3>
+            <ul class="benefit-list">
+                <li><strong>고가용성 (High Availability)</strong>: 단일 실패점 제거</li>
+                <li><strong>장애 대응</strong>: 스위치 다운 시 자동 경로 전환</li>
+                <li><strong>부하 분산</strong>: 트래픽을 여러 경로로 분산</li>
+                <li><strong>유지보수</strong>: 서비스 중단 없이 장비 교체 가능</li>
+            </ul>
+        </div>
+
+        <div class="problem-section">
+            <h3>⚠️ 하지만 루프 문제 발생!</h3>
+            <div class="loop-problems">
+                <div class="problem-box">
+                    <h4>브로드캐스트 스톰</h4>
+                    <p>프레임이 무한 순환하여 대역폭 소진</p>
+                </div>
+                <div class="problem-box">
+                    <h4>MAC 테이블 불안정</h4>
+                    <p>같은 MAC이 여러 포트에서 학습</p>
+                </div>
+                <div class="problem-box">
+                    <h4>프레임 중복</h4>
+                    <p>동일한 프레임이 여러 번 전달</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="loop-diagram" id="stormDiagram">
+        <div class="diagram-title" style="-10px;">브로드캐스트 스톰 시나리오</div>
         <svg width="100%" height="100%">
-            <line x1="200" y1="60" x2="400" y2="200" stroke="white" stroke-width="4"/>
-            <line x1="400" y1="200" x2="200" y2="340" stroke="white" stroke-width="4"/>
-            <line x1="200" y1="340" x2="0" y2="200" stroke="white" stroke-width="4"/>
-            <line x1="10" y1="200" x2="200" y2="60" stroke="white" stroke-width="4"/>
+            <!-- 케이블 라인들 -->
+            <line x1="200" y1="60" x2="400" y2="180" stroke="#00ff88" stroke-width="4" class="active-link" id="cable1"/>
+            <line x1="400" y1="180" x2="200" y2="300" stroke="#00ff88" stroke-width="4" class="active-link" id="cable2"/>
+            <line x1="200" y1="300" x2="0" y2="180" stroke="#00ff88" stroke-width="4" class="active-link" id="cable3"/>
+            <line x1="0" y1="180" x2="200" y2="60" stroke="#00ff88" stroke-width="4" class="active-link" id="cable4"/>
+
+            <!-- 화살표 마커 정의 -->
+            <defs>
+                <marker id="packet-arrow" markerWidth="8" markerHeight="6"
+                        refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <polygon points="0 0, 8 3, 0 6" fill="#ff4444" />
+                </marker>
+
+                <!-- 패킷 애니메이션을 위한 경로들 (실제 케이블과 동일한 경로) -->
+                <path id="packet-path-1" d="M 200,60 L 400,180" fill="none" stroke="none"/>
+                <path id="packet-path-2" d="M 400,180 L 200,300" fill="none" stroke="none"/>
+                <path id="packet-path-3" d="M 200,300 L 0,180" fill="none" stroke="none"/>
+                <path id="packet-path-4" d="M 0,180 L 200,60" fill="none" stroke="none"/>
+            </defs>
+            <!-- 패킷들 (케이블을 따라 움직임) -->
+            <circle r="4" fill="#ff4444" class="packet packet-1">
+                <animateMotion dur="1.5s" repeatCount="indefinite" rotate="auto">
+                    <mpath href="#packet-path-1"/>
+                </animateMotion>
+            </circle>
+
+            <circle r="4" fill="#ff4444" class="packet packet-2">
+                <animateMotion dur="1.5s" repeatCount="indefinite" rotate="auto" begin="0.4s">
+                    <mpath href="#packet-path-2"/>
+                </animateMotion>
+            </circle>
+
+            <circle r="4" fill="#ff4444" class="packet packet-3">
+                <animateMotion dur="1.5s" repeatCount="indefinite" rotate="auto" begin="0.8s">
+                    <mpath href="#packet-path-3"/>
+                </animateMotion>
+            </circle>
+
+            <circle r="4" fill="#ff4444" class="packet packet-4">
+                <animateMotion dur="1.5s" repeatCount="indefinite" rotate="auto" begin="1.2s">
+                    <mpath href="#packet-path-4"/>
+                </animateMotion>
+            </circle>
+
+            <!-- 추가 패킷들로 더 많은 트래픽 효과 -->
+            <circle r="3" fill="#ff6666" class="packet packet-5">
+                <animateMotion dur="1.2s" repeatCount="indefinite" rotate="auto" begin="0.2s">
+                    <mpath href="#packet-path-1"/>
+                </animateMotion>
+            </circle>
+
+            <circle r="3" fill="#ff6666" class="packet packet-6">
+                <animateMotion dur="1.2s" repeatCount="indefinite" rotate="auto" begin="0.6s">
+                    <mpath href="#packet-path-3"/>
+                </animateMotion>
+            </circle>
         </svg>
-        <div class="node" id="sw1" style="top:20px; left:160px;">SW1</div>
-        <div class="node" id="sw2" style="top:160px; left:360px;">SW2</div>
-        <div class="node" id="sw3" style="top:300px; left:160px;">SW3</div>
-        <div class="node" id="sw4" style="top:160px; left:-40px;">SW4</div>
+
+        <div class="node sw-node" style="top:20px; left:160px;" id="sw1">SW1</div>
+        <div class="node sw-node" style="top:140px; left:360px;" id="sw2">SW2</div>
+        <div class="node sw-node" style="top:260px; left:160px;" id="sw3">SW3</div>
+        <div class="node sw-node" style="top:140px; left:-40px;" id="sw4">SW4</div>
+
+        <div class="storm-indicator">
+            <div class="pulse-dot" style="top:80px; left:250px;"></div>
+            <div class="pulse-dot" style="top:200px; left:180px;"></div>
+            <div class="pulse-dot" style="top:180px; left:320px;"></div>
+        </div>
+    </div>
+
+    <div class="solution-preview">
+        <p><strong>💡 STP의 역할:</strong> 물리적으로는 이중화를 유지하되, 논리적으로는 루프를 차단하여 안정성과 가용성을 동시에 확보</p>
     </div>
 </section>
 
@@ -80,7 +174,7 @@
         <!-- 대체 포트 -->
         <div class="port-label alternate-port" id="ap1" style="top: 225px; left: 40px;">Alternate Port</div>
     </div>
-    <div class="step-indicator" id="stpStepIndicator">단계: 0/6</div>
+    <div class="step-indicator" id="stpStepIndicator">단계: 0/15</div>
 </section>
 
 <!-- PVST+ -->
@@ -328,8 +422,8 @@
         <tr><th>프로토콜</th><th>수렴시간</th><th>특징</th><th>장점</th></tr>
         <tr><td>STP</td><td>30~50초</td><td>루프 방지, 느린 수렴</td><td>안정성</td></tr>
         <tr><td>PVST+</td><td>30~50초</td><td>VLAN별 STP, Cisco전용</td><td>VLAN별 최적화, 로드 밸런싱</td></tr>
-        <tr><td>RSTP</td><td>1~2초</td><td>빠른 수렴, VLAN별 STP</td><td>빠른 수렴, 표준화</td></tr>
-        <tr><td>MSTP</td><td>1~2초</td><td>여러 VLAN 인스턴스 묶음</td><td>빠른 수렴, 효율적 로드밸런싱</td></tr>
+        <tr><td>RSTP</td><td>0.028~1초</td><td>빠른 수렴,Edge Port지원</td><td>빠른 수렴, 표준화</td></tr>
+        <tr><td>MSTP</td><td>0.028~1초</td><td>여러 VLAN 인스턴스 묶음</td><td>빠른 수렴, 효율적 로드밸런싱</td></tr>
     </table>
 </section>
 

@@ -4,6 +4,7 @@
     let stpStep = 0, pvstStep = 0, rstpStep = 0, mstpStep = 0;
     let bpduAnimations = [];
     let stormStep = 0;
+    let necessityStep = 0; // 필요성 슬라이드 단계 추가
 
     // 슬라이드 표시 함수
     function showSlide(index) {
@@ -14,16 +15,17 @@
 
         // 각 슬라이드별 초기 상태 설정
         if (slides[index].querySelector('#stormDiagram')) {
-            stormStep = 0;
+            necessityStep = 0; // stormStep 대신 necessityStep 사용
             resetStormAnimation();
+            resetNecessitySlide(); // 새로 추가된 함수
         }
         if (slides[index].querySelector('#stpDiagram')) {
             stpStep = 0;
             resetSTPAnimation();
-            // 여기서 Root Bridge 초기화
-            setRootBridge("stp-root"); // 항상 SW1로 초기화
-            updateStepIndicator('stp', stpStep, 9);
+            setRootBridge("stp-root");
+            updateStepIndicator('stp', stpStep, 16); // 9 → 16로 변경
         }
+
         if (slides[index].querySelector('#pvstDiagram')) {
             pvstStep = 0;
             resetPVSTAnimation();
@@ -118,12 +120,20 @@
         const slide = slides[current];
 
         if (slide.querySelector('#stormDiagram')) {
-            if (stormStep === 0) {
-                // 첫 번째 클릭: 애니메이션 실행
-                runStormAnimation();
-                stormStep = 1;
+            if (necessityStep === 0) {
+                // 첫 번째 클릭: 이중화 필요성 표시
+                showNecessityContent();
+                necessityStep = 1;
+            } else if (necessityStep === 1) {
+                // 두 번째 클릭: 문제점 표시
+                showProblemContent();
+                necessityStep = 2;
+            } else if (necessityStep === 2) {
+                // 세 번째 클릭: 다이어그램과 애니메이션 실행
+                showStormDiagram();
+                necessityStep = 3;
             } else {
-                // 두 번째 클릭: 다음 슬라이드로
+                // 네 번째 클릭: 다음 슬라이드로
                 if (current < slides.length - 1) {
                     current++;
                     showSlide(current);
@@ -133,10 +143,10 @@
         }
 
         if (slide.querySelector('#stpDiagram')) {
-            if (stpStep < 9) {
+            if (stpStep < 16) { // 9 → 15로 변경
                 stpStep++;
                 runSTPStep(stpStep);
-                updateStepIndicator('stp', stpStep, 9);
+                updateStepIndicator('stp', stpStep, 16); // 9 → 16로 변경
             } else if (current < slides.length - 1) {
                 current++;
                 showSlide(current);
@@ -200,8 +210,21 @@
         const slide = slides[current];
 
         if (slide.querySelector('#stormDiagram')) {
-            // Storm 슬라이드에서는 이전 슬라이드로 이동
-            prevSlide();
+            if (necessityStep > 0) {
+                necessityStep--;
+                resetNecessitySlide();
+                // 이전 단계까지 순차적으로 실행
+                for (let i = 1; i <= necessityStep; i++) {
+                    setTimeout(() => {
+                        if (i === 1) showNecessityContent();
+                        else if (i === 2) showProblemContent();
+                        else if (i === 3) showStormDiagram();
+                    }, i * 300);
+                }
+            } else {
+                // 단계가 0일 때는 이전 슬라이드로
+                prevSlide();
+            }
             return;
         }
 
@@ -213,9 +236,8 @@
                 for (let i = 1; i <= stpStep; i++) {
                     setTimeout(() => runSTPStep(i), i * 300);
                 }
-                updateStepIndicator('stp', stpStep, 9);
+                updateStepIndicator('stp', stpStep, 16); // 9 → 15로 변경
             } else {
-                // 단계가 0일 때는 이전 슬라이드로
                 prevSlide();
             }
             return;
@@ -281,6 +303,55 @@
                 sw.classList.remove('looping', 'off');
                 sw.style.background = '#4FC3F7';
             }
+        });
+    }
+
+    // 초기화 함수도 수정
+    function resetNecessitySlide() {
+        const sections = ['.necessity-content .redundancy-section', '.necessity-content .problem-section', '.loop-diagram', '.solution-preview'];
+        sections.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.style.display = 'none';
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+            }
+        });
+
+        // 스위치 노드 초기화
+        const swNodes = document.querySelectorAll('#stormDiagram .node');
+        swNodes.forEach(sw => {
+            sw.classList.remove('storm-active', 'overloaded');
+            sw.style.backgroundColor = '';
+        });
+
+        // 펄스 도트 초기화
+        const pulseDots = document.querySelectorAll('.pulse-dot');
+        pulseDots.forEach(dot => {
+            dot.style.display = 'none';
+            dot.classList.remove('pulse-animation');
+            dot.style.animationDuration = '';
+        });
+
+        // 패킷 초기화
+        const packets = document.querySelectorAll('.packet');
+        packets.forEach(packet => {
+            packet.classList.remove('active', 'storm-mode', 'overload-mode');
+            packet.setAttribute('r', '4');
+            const animation = packet.querySelector('animateMotion');
+            if (animation) {
+                animation.setAttribute('dur', '1.5s');
+            }
+        });
+
+        // 케이블 초기화
+        const cables = document.querySelectorAll('.active-link');
+        cables.forEach(cable => {
+            cable.classList.remove('transmitting');
+            cable.style.stroke = '#00ff88';
+            cable.style.strokeWidth = '4';
+            cable.style.opacity = '1';
+            cable.style.filter = 'drop-shadow(0 0 2px #00ff88)';
         });
     }
 
@@ -493,29 +564,278 @@
 
     }
 
-    // === 애니메이션 실행 함수들 ===
-    function runStormAnimation() {
-        const sws = ['sw1', 'sw2', 'sw3', 'sw4'].map(id => document.getElementById(id));
+    // 1단계: 이중화 필요성만 표시 (다른 모든 섹션 숨김)
+    function showNecessityContent() {
+        // 먼저 모든 섹션 숨기기
+        resetNecessitySlide();
+
+        // 이중화 필요성 섹션만 표시
+        const redundancySection = document.querySelector('.necessity-content .redundancy-section');
+        if (redundancySection) {
+            redundancySection.style.display = 'block';
+            redundancySection.style.opacity = '0';
+            redundancySection.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                redundancySection.style.transition = 'all 0.5s ease';
+                redundancySection.style.opacity = '1';
+                redundancySection.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    }
+
+    // 2단계: 문제점만 표시 (이전 섹션 숨김)
+    function showProblemContent() {
+        // 이전 섹션들 숨기기
+        const redundancySection = document.querySelector('.necessity-content .redundancy-section');
+        const loopDiagram = document.querySelector('.loop-diagram');
+        const solutionPreview = document.querySelector('.solution-preview');
+
+        if (redundancySection) redundancySection.style.display = 'none';
+        if (loopDiagram) loopDiagram.style.display = 'none';
+        if (solutionPreview) solutionPreview.style.display = 'none';
+
+        // 문제점 섹션만 표시
+        const problemSection = document.querySelector('.necessity-content .problem-section');
+        if (problemSection) {
+            problemSection.style.display = 'block';
+            problemSection.style.opacity = '0';
+            problemSection.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                problemSection.style.transition = 'all 0.5s ease';
+                problemSection.style.opacity = '1';
+                problemSection.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    }
+
+    // 3단계: 다이어그램과 애니메이션만 표시 (텍스트 섹션들 숨김)
+    function showStormDiagram() {
+        // 이전 텍스트 섹션들 숨기기
+        const redundancySection = document.querySelector('.necessity-content .redundancy-section');
+        const problemSection = document.querySelector('.necessity-content .problem-section');
+        const solutionPreview = document.querySelector('.solution-preview');
+
+        if (redundancySection) redundancySection.style.display = 'none';
+        if (problemSection) problemSection.style.display = 'none';
+        if (solutionPreview) solutionPreview.style.display = 'none';
+
+        // 다이어그램만 표시
+        const loopDiagram = document.querySelector('.loop-diagram');
+        if (loopDiagram) {
+            loopDiagram.style.display = 'block';
+            loopDiagram.style.opacity = '0';
+            loopDiagram.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                loopDiagram.style.transition = 'all 0.5s ease';
+                loopDiagram.style.opacity = '1';
+                loopDiagram.style.transform = 'translateY(0)';
+
+                // 다이어그램 표시 후 애니메이션 실행
+                setTimeout(() => {
+                    runEnhancedStormAnimation();
+                }, 500);
+            }, 100);
+        }
+    }
+
+    // 향상된 스톰 애니메이션 (패킷 흐름 제어 포함)
+    function runEnhancedStormAnimation() {
+        const swNodes = document.querySelectorAll('#stormDiagram .node');
+        const pulseDots = document.querySelectorAll('.pulse-dot');
+        const packets = document.querySelectorAll('.packet');
+        const cables = document.querySelectorAll('.active-link');
+
         let interval = 500;
+        let animationCount = 0;
+        const maxAnimations = 8;
+
+        // 초기 상태 설정
+        pulseDots.forEach(dot => {
+            dot.style.display = 'block';
+            dot.classList.add('pulse-animation');
+        });
+
+        // 패킷 활성화
+        packets.forEach((packet, index) => {
+            packet.classList.add('active');
+            // 초기 속도 설정
+            const animation = packet.querySelector('animateMotion');
+            if (animation) {
+                animation.setAttribute('dur', '1.5s');
+            }
+        });
+
+        // 케이블 전송 상태 활성화
+        cables.forEach(cable => {
+            cable.classList.add('transmitting');
+        });
 
         const anim = setInterval(() => {
-            sws.forEach(sw => {
-                if (sw) sw.classList.toggle('looping');
+            // 스위치 노드들에 스톰 효과 적용
+            swNodes.forEach(sw => {
+                sw.classList.toggle('storm-active');
             });
-            interval -= 80;
 
-            if (interval <= 100) {
+            // 패킷 속도 점점 빨라지게
+            const packetSpeed = Math.max(0.2, 1.5 - (animationCount * 0.15)); // 1.5초에서 0.2초까지
+            packets.forEach(packet => {
+                const animation = packet.querySelector('animateMotion');
+                if (animation) {
+                    animation.setAttribute('dur', `${packetSpeed}s`);
+                }
+
+                // 스톰 모드 스타일 적용
+                if (animationCount > 3) {
+                    packet.classList.add('storm-mode');
+                    packet.setAttribute('r', '5');
+                }
+            });
+
+            // 케이블 글로우 효과 강화
+            if (animationCount > 2) {
+                cables.forEach(cable => {
+                    cable.style.strokeWidth = Math.min(8, 4 + animationCount);
+                    cable.style.filter = `drop-shadow(0 0 ${2 + animationCount}px #00ff88)`;
+                });
+            }
+
+            // 펄스 도트 속도 증가
+            const pulseSpeed = Math.max(0.1, 0.8 - (animationCount * 0.08));
+            pulseDots.forEach(dot => {
+                dot.style.animationDuration = `${pulseSpeed}s`;
+            });
+
+            animationCount++;
+            interval = Math.max(100, interval - 60);
+
+            if (animationCount >= maxAnimations) {
                 clearInterval(anim);
-                sws.forEach(sw => {
-                    if (sw) {
-                        sw.classList.remove('looping');
-                        sw.classList.add('off');
+
+                // 스톰 효과 종료
+                swNodes.forEach(sw => {
+                    sw.classList.remove('storm-active');
+                    sw.classList.add('overloaded');
+                });
+
+                // 패킷들을 오버로드 모드로 변경
+                packets.forEach(packet => {
+                    packet.classList.remove('storm-mode');
+                    packet.classList.add('overload-mode');
+                    const animation = packet.querySelector('animateMotion');
+                    if (animation) {
+                        animation.setAttribute('dur', '3s'); // 매우 느려짐
                     }
                 });
+
+                // 케이블 오버로드 상태
+                cables.forEach(cable => {
+                    cable.classList.remove('transmitting');
+                    cable.style.stroke = '#cc0000';
+                    cable.style.opacity = '0.5';
+                    cable.style.strokeWidth = '2';
+                    cable.style.filter = 'none';
+                });
+
+                // 2초 후 솔루션 미리보기 표시
+                setTimeout(() => {
+                    showSolutionPreview();
+                }, 2000);
             }
         }, interval);
     }
 
+    // 4단계: 솔루션 미리보기 표시 (다이어그램은 유지)
+    function showSolutionPreview() {
+        const solutionPreview = document.querySelector('.solution-preview');
+        if (solutionPreview) {
+            solutionPreview.style.display = 'block';
+            solutionPreview.style.opacity = '0';
+            solutionPreview.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                solutionPreview.style.transition = 'all 0.5s ease';
+                solutionPreview.style.opacity = '1';
+                solutionPreview.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    }
+
+    // 업데이트된 CSS 스타일
+    function addStormStyles() {
+        if (document.getElementById('storm-animation-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'storm-animation-styles';
+        style.textContent = `
+            .storm-active {
+                background-color: #ff4444 !important;
+                color: white !important;
+                animation: stormPulse 0.3s ease-in-out infinite alternate;
+                box-shadow: 0 0 20px rgba(255, 68, 68, 0.8) !important;
+            }
+
+            .overloaded {
+                background-color: #cc0000 !important;
+                color: white !important;
+                opacity: 0.7 !important;
+            }
+
+            .pulse-animation {
+                animation: pulseDot 0.8s ease-in-out infinite;
+            }
+
+            .packet {
+                opacity: 0;
+                filter: drop-shadow(0 0 3px #ff4444);
+                transition: all 0.3s ease;
+            }
+
+            .packet.active {
+                opacity: 1;
+            }
+
+            .packet.storm-mode {
+                fill: #ff0000 !important;
+                filter: drop-shadow(0 0 5px #ff0000) !important;
+            }
+
+            .packet.overload-mode {
+                fill: #cc0000 !important;
+                opacity: 0.3 !important;
+            }
+
+            .active-link {
+                filter: drop-shadow(0 0 2px #00ff88);
+                transition: all 0.3s ease;
+            }
+
+            .active-link.transmitting {
+                animation: cableGlow 0.5s ease-in-out infinite alternate;
+            }
+
+            @keyframes stormPulse {
+                0% { transform: scale(1); }
+                100% { transform: scale(1.1); }
+            }
+
+            @keyframes pulseDot {
+                0% { transform: scale(0.8); opacity: 0.6; }
+                50% { transform: scale(1.2); opacity: 1; }
+                100% { transform: scale(0.8); opacity: 0.6; }
+            }
+
+            @keyframes cableGlow {
+                0% { opacity: 0.8; }
+                100% { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // runSTPStep 함수 수정 (기존 코드에서 이 함수만 교체)
     function runSTPStep(step) {
         const root = document.getElementById('stp-root');
         const sw2 = document.getElementById('stp-sw2');
@@ -543,42 +863,86 @@
                 break;
 
             case 4:
-                // 루트 포트 선출 - Path Cost 비교
-                showComparisonText("루트 포트 선출: Path Cost 비교");
-                startPathCostComparison();
+                // 루트 포트 선출 시나리오 1: Path Cost 차이
+                showComparisonText("루트 포트 시나리오 1: Path Cost 비교");
+                startRootPortScenario1();
                 break;
 
             case 5:
-                // 루트 포트 선출 - Bridge ID 비교 (Path Cost가 같을 경우)
-                showComparisonText("Path Cost 동일 → Bridge ID 재비교");
-                startRootPortBridgeIDComparison();
+                // 루트 포트 선출 시나리오 2: Path Cost 동일, Bridge ID 비교
+                showComparisonText("루트 포트 시나리오 2: Path Cost 동일");
+                startRootPortScenario2();
                 break;
 
             case 6:
-                // 루트 포트 선출 완료
-                selectRootPorts();
-                showComparisonText("루트 포트 선출 완료 (Port ID 비교 생략)");
+                // 루트 포트 선출 시나리오 3: Path Cost, Bridge ID 동일, Port ID 비교
+                showComparisonText("루트 포트 시나리오 3: Path Cost & Bridge ID 동일");
+                startRootPortScenario3();
                 break;
 
             case 7:
-                // 지정 포트 선출 - Path Cost, Bridge ID, Port ID 비교
-                showComparisonText("지정 포트 선출: Path Cost → Bridge ID → Port ID 비교");
-                startDesignatedPortComparison();
+                // 루트 포트 선출 완료
+                selectRootPorts();
+                showComparisonText("루트 포트 선출 완료");
                 break;
 
             case 8:
-                // 대체 포트 선출 - SW2 vs SW3 비교
-                showComparisonText("대체 포트 선출: SW2 vs SW3 비교");
-                startAlternatePortComparison();
+                // 지정 포트 선출 시나리오 1: Path Cost 차이
+                showComparisonText("지정 포트 시나리오 1: Path Cost 비교");
+                startDesignatedPortScenario1();
                 break;
 
             case 9:
+                // 지정 포트 선출 시나리오 2: Path Cost 동일, Bridge ID 비교
+                showComparisonText("지정 포트 시나리오 2: Path Cost 동일");
+                startDesignatedPortScenario2();
+                break;
+
+            case 10:
+                // 지정 포트 선출 시나리오 3: Path Cost, Bridge ID 동일, Port ID 비교
+                showComparisonText("지정 포트 시나리오 3: Path Cost & Bridge ID 동일");
+                startDesignatedPortScenario3();
+                break;
+
+            case 11:
+                // 지정 포트 선출 완료
+                selectDesignatedPorts();
+                showComparisonText("지정 포트 선출 완료");
+                break;
+
+            case 12:
+                // 대체 포트 선출 시나리오 1: Path Cost 차이
+                showComparisonText("대체 포트 시나리오 1: Path Cost 비교");
+                startAlternatePortScenario1();
+                break;
+
+            case 13:
+                // 대체 포트 선출 시나리오 2: Path Cost 동일, Bridge ID 비교
+                showComparisonText("대체 포트 시나리오 2: Path Cost 동일");
+                startAlternatePortScenario2();
+                break;
+
+            case 14:
+                // 대체 포트 선출 시나리오 3: Path Cost, Bridge ID 동일, Port ID 비교
+                showComparisonText("대체 포트 시나리오 3: Path Cost & Bridge ID 동일");
+                startAlternatePortScenario3();
+                break;
+
+
+            case 15:
+            //대체 포트 선출 완료
+                selectAlternatePort();
+                showComparisonText("대체 포트 및 지정 포트 선출 완료");
+                break;
+
+            case 16:
                 // 최종 결과 - 루프 차단
                 showComparisonText("STP 수렴 완료: 루프 차단");
                 finalizeSTConfig();
                 break;
         }
     }
+
 
     function showBridgeIDs() {
         ['root-id', 'sw2-id', 'sw3-id'].forEach(id => {
@@ -730,6 +1094,7 @@
 
     // 루트 포트 선출 완료
     function selectRootPorts() {
+        resetHighlights();
         const sw2 = document.getElementById('stp-sw2');
         const sw3 = document.getElementById('stp-sw3');
         const linkRS2 = document.getElementById('link-r-s2');
@@ -855,6 +1220,475 @@
             showComparisonText("STP 수렴 완료! 루프 없는 안정적인 네트워크 구성");
         }, 2000);
     }
+
+    // 새로운 시나리오 함수들 추가
+    // 루트 포트 시나리오 1: Path Cost 차이로 결정
+    function startRootPortScenario1() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-r-s2')],
+                text: "SW2 → Root: Path Cost 19",
+                color: '#00ff00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-r-s3')],
+                text: "SW3 → Root: Path Cost 100",
+                color: '#ff0000'
+            },
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-r-s2')],
+                text: "SW2 승리: Path Cost가 더 낮음 (19 < 100)",
+                color: '#00ff00'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 루트 포트 시나리오 2: Path Cost 동일, Bridge ID로 결정
+    function startRootPortScenario2() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-r-s2')],
+                text: "SW2: Path Cost 19, Bridge ID 8192.002",
+                color: '#ffaa00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-r-s3')],
+                text: "SW3: Path Cost 19, Bridge ID 12288.003",
+                color: '#ffaa00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-r-s2')],
+                text: "SW2 승리: Bridge ID가 더 낮음 (8192 < 12288)",
+                color: '#00ff00'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 루트 포트 시나리오 3: Path Cost, Bridge ID 동일, Port ID로 결정
+    function startRootPortScenario3() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-r-s2')],
+                text: "SW2: Cost 19, Bridge ID 8192.002, Port ID 1",
+                color: '#aa00ff'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-r-s3')],
+                text: "SW3: Cost 19, Bridge ID 8192.002, Port ID 2",
+                color: '#aa00ff'
+            },
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-r-s2')],
+                text: "SW2 승리: Port ID가 더 낮음 (1 < 2)",
+                color: '#00ff00'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 지정 포트 시나리오 1: Path Cost 차이로 결정
+    function startDesignatedPortScenario1() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-root')],
+                links: [document.getElementById('link-r-s2')],
+                text: "Root → 세그먼트: Path Cost 0",
+                color: '#00ff00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-r-s2')],
+                text: "SW2 → 세그먼트: Path Cost 19",
+                color: '#ff0000'
+            },
+            {
+                nodes: [document.getElementById('stp-root')],
+                links: [document.getElementById('link-r-s2'), document.getElementById('link-r-s3')],
+                text: "Root 승리: Path Cost가 더 낮음 (0 < 19)",
+                color: '#00ff00'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 지정 포트 시나리오 2: Path Cost 동일, Bridge ID로 결정
+    function startDesignatedPortScenario2() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW2: Path Cost 19, Bridge ID 8192.002",
+                color: '#ffaa00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW3: Path Cost 19, Bridge ID 12288.003",
+                color: '#ffaa00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW2 승리: Bridge ID가 더 낮음",
+                color: '#00ff00'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 지정 포트 시나리오 3: Path Cost, Bridge ID 동일, Port ID로 결정
+    function startDesignatedPortScenario3() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW2: Cost 19, Bridge ID 8192.002, Port ID 1",
+                color: '#aa00ff'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW3: Cost 19, Bridge ID 8192.002, Port ID 2",
+                color: '#aa00ff'
+            },
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW2 승리: Port ID가 더 낮음",
+                color: '#00ff00'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 대체 포트 시나리오 1: Path Cost 차이로 결정
+    function startAlternatePortScenario1() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW2 → Root: Path Cost 38 (via SW3)",
+                color: '#00ff00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW3 → Root: Path Cost 57 (via SW2)",
+                color: '#ff0000'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW3가 대체 포트: Path Cost가 더 높음",
+                color: '#ff0000'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 대체 포트 시나리오 2: Path Cost 동일, Bridge ID로 결정
+    function startAlternatePortScenario2() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW2: Path Cost 38, Bridge ID 8192.002",
+                color: '#ffaa00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW3: Path Cost 38, Bridge ID 12288.003",
+                color: '#ffaa00'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW3가 대체 포트: Bridge ID가 더 높음",
+                color: '#ff0000'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 대체 포트 시나리오 3: Path Cost, Bridge ID 동일, Port ID로 결정
+    function startAlternatePortScenario3() {
+        resetHighlights();
+
+        const comparisons = [
+            {
+                nodes: [document.getElementById('stp-sw2')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW2: Cost 38, Bridge ID 8192.002, Port ID 2",
+                color: '#aa00ff'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW3: Cost 38, Bridge ID 8192.002, Port ID 3",
+                color: '#aa00ff'
+            },
+            {
+                nodes: [document.getElementById('stp-sw3')],
+                links: [document.getElementById('link-s2-s3')],
+                text: "SW3가 대체 포트: Port ID가 더 높음",
+                color: '#ff0000'
+            }
+        ];
+
+        runComparisonSequence(comparisons);
+    }
+
+    // 공통 비교 시퀀스 실행 함수 (새로 추가)
+    function runComparisonSequence(comparisons) {
+        let index = 0;
+
+        function showNextComparison() {
+            if (index < comparisons.length) {
+                const comp = comparisons[index];
+
+                // 이전 하이라이트 제거
+                resetHighlights();
+
+                // 노드 하이라이트
+                comp.nodes.forEach(node => {
+                    if (node) {
+                        node.style.backgroundColor = comp.color;
+                        node.style.boxShadow = `0 0 15px ${comp.color}`;
+                        node.classList.add('comparing');
+                    }
+                });
+
+                // 링크 하이라이트
+                if (comp.links) {
+                    comp.links.forEach(link => {
+                        if (link) {
+                            link.setAttribute('stroke', comp.color);
+                            link.setAttribute('stroke-width', '6');
+                        }
+                    });
+                }
+
+                // 텍스트 표시
+                showComparisonText(comp.text);
+
+                index++;
+                setTimeout(showNextComparison, 2500);
+            }
+        }
+
+        showNextComparison();
+    }
+
+    // 하이라이트 초기화 함수 (새로 추가)
+    function resetHighlights() {
+        const nodes = [document.getElementById('stp-root'), document.getElementById('stp-sw2'), document.getElementById('stp-sw3')];
+        nodes.forEach(node => {
+            if (node) {
+                node.style.backgroundColor = '';
+                node.style.boxShadow = '';
+                node.classList.remove('comparing');
+            }
+        });
+
+        const links = [document.getElementById('link-r-s2'), document.getElementById('link-r-s3'), document.getElementById('link-s2-s3')];
+        links.forEach(link => {
+            if (link) {
+                link.setAttribute('stroke', 'white');
+                link.setAttribute('stroke-width', '4');
+            }
+        });
+    }
+
+    // 헬퍼 함수들
+    function createInfoBox(content) {
+        // 기존 정보 박스 제거
+        const existingBox = document.getElementById('scenario-info-box');
+        if (existingBox) existingBox.remove();
+
+        const infoBox = document.createElement('div');
+        infoBox.id = 'scenario-info-box';
+        infoBox.innerHTML = content;
+        infoBox.style.cssText = `
+            position: absolute;
+            top: 350px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            border: 2px solid #4FC3F7;
+            max-width: 400px;
+            z-index: 200;
+        `;
+
+        const diagram = document.getElementById('stpDiagram');
+        if (diagram) diagram.appendChild(infoBox);
+        return infoBox;
+    }
+
+    function highlightNodes(nodes, color) {
+        nodes.forEach(node => {
+            if (node) {
+                node.style.backgroundColor = color;
+                node.style.boxShadow = `0 0 15px ${color}`;
+                node.classList.add('comparing');
+            }
+        });
+    }
+
+    function highlightLinks(links, color) {
+        links.forEach(link => {
+            if (link) {
+                link.setAttribute('stroke', color);
+                link.setAttribute('stroke-width', '6');
+            }
+        });
+    }
+
+    // 하이라이트 초기화 함수 (새로 추가)
+    function resetHighlights() {
+        const nodes = [document.getElementById('stp-root'), document.getElementById('stp-sw2'), document.getElementById('stp-sw3')];
+        nodes.forEach(node => {
+            if (node) {
+                node.style.backgroundColor = '';
+                node.style.boxShadow = '';
+                node.classList.remove('comparing');
+            }
+        });
+
+        const links = [document.getElementById('link-r-s2'), document.getElementById('link-r-s3'), document.getElementById('link-s2-s3')];
+        links.forEach(link => {
+            if (link) {
+                link.setAttribute('stroke', 'white');
+                link.setAttribute('stroke-width', '4');
+            }
+        });
+    }
+
+    // selectRootPorts 함수 수정 (기존 함수를 찾아서 맨 앞에 resetHighlights() 추가)
+    function selectRootPorts() {
+        resetHighlights(); // 이 줄 추가
+
+        const sw2 = document.getElementById('stp-sw2');
+        const sw3 = document.getElementById('stp-sw3');
+        const linkRS2 = document.getElementById('link-r-s2');
+        const linkRS3 = document.getElementById('link-r-s3');
+
+        // 비교 효과 제거 및 루트 포트 색상 설정
+        [sw2, sw3].forEach(node => {
+            if (node) {
+                node.classList.remove('comparing');
+                node.style.background = '#007bff'; // 루트 포트 색상
+            }
+        });
+
+        [linkRS2, linkRS3].forEach(link => {
+            if (link) link.setAttribute('stroke', '#007bff');
+        });
+
+        // 루트 포트 라벨 표시
+        const rootPorts = ['rp1', 'rp2'];
+        rootPorts.forEach((id, index) => {
+            setTimeout(() => {
+                const label = document.getElementById(id);
+                if (label) label.classList.add('show');
+            }, 300 * (index + 1));
+        });
+
+        // BPDU 전송
+        const root = document.getElementById('stp-root');
+        createBPDU('stpDiagram', root, sw2, '#FFD700');
+        createBPDU('stpDiagram', root, sw3, '#FFD700');
+    }
+
+    // selectDesignatedPorts 함수 추가 (새로 추가)
+    function selectDesignatedPorts() {
+        resetHighlights();
+
+        const root = document.getElementById('stp-root');
+        const sw2 = document.getElementById('stp-sw2');
+
+        if (root) {
+            root.style.background = '#28a745';
+        }
+
+        if (sw2) {
+            sw2.style.background = '#28a745';
+        }
+
+        // 지정 포트 라벨 표시
+        const designatedPorts = ['dp1', 'dp3'];
+        designatedPorts.forEach((id, index) => {
+            setTimeout(() => {
+                const label = document.getElementById(id);
+                if (label) label.classList.add('show');
+            }, 200 * (index + 1));
+        });
+    }
+
+    function selectAlternatePort() {
+        resetHighlights();
+
+        const sw2 = document.getElementById('stp-sw2');
+        const sw3 = document.getElementById('stp-sw3');
+
+        if (sw2) {
+            sw2.style.background = '#288ba7';
+        }
+
+        if (sw3) {
+            sw3.style.background = '#288ba7';
+        }
+
+        // 대체 포트 라벨 표시
+        const alternatePort = ['ap1', 'dp2'];
+        alternatePort.forEach((id, index) => {
+            setTimeout(() => {
+                const label = document.getElementById(id);
+                if (label) label.classList.add('show');
+            }, 200 * (index + 1));
+        });
+    }
+
+
 
     function runPVSTStep(step) {
         const vlans = [
@@ -1357,5 +2191,6 @@
 
     // DOM이 로드된 후 초기 슬라이드 표시
     document.addEventListener('DOMContentLoaded', function() {
+        addStormStyles();
         showSlide(0);
     });
