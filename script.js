@@ -34,7 +34,7 @@
         if (slides[index].querySelector('#rstpDiagram')) {
             rstpStep = 0;
             resetRSTPAnimation();
-            updateStepIndicator('rstp', rstpStep, 8);
+            updateStepIndicator('rstp', rstpStep, 10);
         }
         if (slides[index].querySelector('#mstpDiagram')){
             mstpStep = 0;
@@ -167,10 +167,10 @@
         }
 
         if (slide.querySelector('#rstpDiagram')) {
-            if (rstpStep < 8) {
+            if (rstpStep < 10) {
                 rstpStep++;
                 runRSTPStep(rstpStep);
-                updateStepIndicator('rstp', rstpStep, 8);
+                updateStepIndicator('rstp', rstpStep, 10);
             } else if (current < slides.length - 1) {
                 current++;
                 showSlide(current);
@@ -267,7 +267,7 @@
                 for (let i = 1; i <= rstpStep; i++) {
                     setTimeout(() => runRSTPStep(i), i * 300);
                 }
-                updateStepIndicator('rstp', rstpStep, 8);
+                updateStepIndicator('rstp', rstpStep, 10);
             } else {
                 // 단계가 0일 때는 이전 슬라이드로
                 prevSlide();
@@ -1817,16 +1817,16 @@
 
         switch (step) {
             case 1:
-                // Root 하이라이트
-                if (root) {
-                    root.style.background = '#FFD700';
-                    root.classList.add('highlight');
+                // SW3 하이라이트
+                if (sw3) {
+                    sw3.style.background = '#FFD700';
+                    sw3.classList.add('highlight');
                 }
                 break;
 
             case 2:
                 // root ↔ sw1 BPDU 교환
-                if (root && sw1) createBPDU('rstpDiagram', root, sw1, '#FFD700');
+                if (sw3 && sw1) createBPDU('rstpDiagram', sw3, sw1, '#FFD700');
                 break;
 
             case 3:
@@ -1838,11 +1838,26 @@
                 break;
 
             case 4:
-                // sw1 ↔ sw3 BPDU 교환
-                if (sw1 && sw3) createBPDU('rstpDiagram', sw1, sw3, '#FF4500');
-                if (sw3) {
-                    sw3.style.background = '#ca45ff';
-                    sw3.classList.add('highlight');
+                // 기존 case 2 BPDU 제거
+                bpduAnimations.forEach(anim => {
+                    if (anim.element && anim.element.closest('#rstpDiagram')) {
+                        if (anim.frameId) cancelAnimationFrame(anim.frameId);
+                        anim.element.remove();
+                    }
+                });
+                bpduAnimations = bpduAnimations.filter(anim =>
+                    !(anim.element && anim.element.closest('#rstpDiagram'))
+                );
+
+                // SW3 ↔ ROOT packet 교환 (중간 sw1 거쳐감)
+                if (sw3 && sw1) createBPDU('rstpDiagram', sw3, sw1, '#FF4500');
+                setTimeout(() => {
+                    if (sw1 && root) createBPDU('rstpDiagram', sw1, root, '#FF4500');
+                }, 600); // 첫 애니메이션 조금 진행한 후 이어서 전송
+
+                if (root) {
+                    root.style.background = '#ca45ff';
+                    root.classList.add('highlight');
                 }
                 break;
 
@@ -1860,6 +1875,10 @@
                     sw3.classList.remove('highlight');
                     sw3.style.background = '';
                 }
+                if (root) {
+                    root.classList.remove('highlight');
+                    root.style.background = '';
+                }
                 // sw1-sw3 BPDU 애니메이션 제거
                 bpduAnimations.forEach(anim => {
                     if (anim.element && anim.element.closest('#rstpDiagram')) {
@@ -1873,24 +1892,52 @@
                 break;
 
             case 6:
-                // root ↔ sw2 BPDU 교환
-                if (root && sw2) {
-                    sw2.style.background = '#32CD32';
-                    sw2.classList.add('highlight');
-                    createBPDU('rstpDiagram', root, sw2, '#FFD700');
+                // SW3 하이라이트
+                if (sw3) {
+                    sw3.style.background = '#FFD700';
+                    sw3.classList.add('highlight');
                 }
                 break;
 
             case 7:
-                // sw2 ↔ sw3 BPDU 교환
-                if (sw2 && sw3) createBPDU('rstpDiagram', sw2, sw3, '#32CD32');
+                // SW3 ↔ sw2 paket 교환
+                if (sw3 && sw2) {
+                    sw3.style.background = '#32CD32';
+                    sw3.classList.add('highlight');
+                    createBPDU('rstpDiagram', sw3, sw2, '#FFD700');
+                }
                 break;
 
             case 8:
-                // sw3 하이라이트 (최종 경로 안정화)
-                if (sw3) {
-                    sw3.style.background = '#ca45ff';
-                    sw3.classList.add('highlight');
+                // sw1 하이라이트
+                if (sw2) {
+                    sw2.style.background = '#FF4500';
+                    sw2.classList.add('highlight');
+                }
+                break;
+
+            case 9:
+                bpduAnimations.forEach(anim => {
+                    if (anim.element && anim.element.closest('#rstpDiagram')) {
+                        if (anim.frameId) cancelAnimationFrame(anim.frameId);
+                        anim.element.remove();
+                    }
+                });
+                bpduAnimations = bpduAnimations.filter(anim =>
+                    !(anim.element && anim.element.closest('#rstpDiagram'))
+                );
+                // sw3 → sw2 → root
+                if (sw3 && sw2) createBPDU('rstpDiagram', sw3, sw2, '#32CD32');
+                setTimeout(() => {
+                    if (sw2 && root) createBPDU('rstpDiagram', sw2, root, '#32CD32');
+                }, 600);
+                break;
+
+            case 10:
+                // root 하이라이트 (최종 경로 안정화)
+                if (root) {
+                    root.style.background = '#ca45ff';
+                    root.classList.add('highlight');
                 }
                 break;
         }
